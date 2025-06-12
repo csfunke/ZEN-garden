@@ -166,6 +166,7 @@ class Analysis(Subscriptable):
     output_format: str = "h5"
     earliest_year_of_data: int = 1900
     zen_garden_version: str = None
+    prices_from_operation_only: bool = False
 
 class Config(Subscriptable):
     """
