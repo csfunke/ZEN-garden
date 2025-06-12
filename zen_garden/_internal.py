@@ -96,5 +96,11 @@ def main(config, dataset_path=None, job_index=None, folder_output_path=None):
             # write results
             Postprocess(optimization_setup, scenarios=config.scenarios, subfolder=subfolder,
                         model_name=model_name, scenario_name=scenario_name, param_map=param_map)
+            
+            # run operations-only model to obtain true marginal prices
+            if config.analysis.prices_from_operation_only:
+                # run problem with fixed capacities
+                print("ToDo")
+
     logging.info("--- Optimization finished ---")
     return optimization_setup
