@@ -157,6 +157,8 @@ class Analysis(Subscriptable):
     output_format: str = "h5"
     earliest_year_of_data: int = 1900
     zen_garden_version: str = None
+    include_operation_only_phase: bool = False
+
 
 
 class Config(Subscriptable):
