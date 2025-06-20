@@ -78,6 +78,9 @@ class OptimizationSetup(object):
         # step of optimization horizon
         self.step_horizon = 0
 
+        # operations-only model with no capacity expansion
+        self.operations_only = False
+
         # Init the energy system
         self.energy_system = EnergySystem(optimization_setup=self)
 
