@@ -57,6 +57,8 @@ class ConversionTechnology(Technology):
         # get conversion efficiency and capex
         self.get_conversion_factor()
         self.opex_specific_fixed = self.data_input.extract_input_data("opex_specific_fixed", index_sets=["set_nodes", "set_time_steps_yearly"], time_steps="set_time_steps_yearly", unit_category={"money": 1, "energy_quantity": -1, "time": 1})
+        self.min_average_capacity_factor = self.data_input.extract_input_data("min_average_capacity_factor", index_sets=["set_nodes", "set_time_steps_yearly"], time_steps="set_time_steps_yearly", unit_category={})
+
         self.convert_to_fraction_of_capex()
 
     def get_conversion_factor(self):
@@ -273,6 +275,8 @@ class ConversionTechnology(Technology):
         rules.constraint_opex_emissions_technology_conversion()
         # conversion factor
         rules.constraint_carrier_conversion()
+        # minimum average annual capacity factor
+        rules.constraint_minimum_average_capacity_factor()
 
         # capex
         set_pwa_capex = cls.create_custom_set(["set_conversion_technologies", "set_capex_pwa", "set_nodes", "set_time_steps_yearly"], optimization_setup)
@@ -342,6 +346,59 @@ class ConversionTechnologyRules(GenericRule):
         :math:`m_{i,n,t}^{\\mathrm{max}}`: maximum load factor of the technology :math:`i` at node :math:`n` in time step :math:`t` \n
         :math:`S_{i,n,y}`: installed capacity of the technology :math:`i` at node :math:`n` in year :math:`y` \n
         :math:`G_{i,n,t}^\\mathrm{r}`: reference carrier flow of the technology :math:`i` at node :math:`n` in time step :math:`t`
+
+
+        """
+        techs = self.sets["set_conversion_technologies"]
+        if len(techs) == 0:
+            return
+        nodes = self.sets["set_nodes"]
+        times = self.parameters.max_load.coords["set_time_steps_operation"]
+        time_step_year = xr.DataArray([self.optimization_setup.energy_system.time_steps.convert_time_step_operation2year(t) for t in times.data], coords=[times])
+        term_capacity = (
+                self.parameters.max_load.loc[techs, "power", nodes, :]
+                * self.variables["capacity"].loc[techs, "power", nodes, time_step_year]
+            ).rename({"set_technologies": "set_conversion_technologies", "set_location": "set_nodes"})
+        term_reference_flow = self.get_flow_expression_conversion(techs,  nodes)
+        lhs = term_capacity - term_reference_flow
+        rhs = 0
+        constraints = lhs >= rhs
+
+        self.constraints.add_constraint("constraint_capacity_factor_conversion", constraints)
+
+
+    def constraint_minimum_average_capacity_factor(self):
+        """ sets minimum annual production per unit of installed capacity
+
+        This function adds a constraint requiring that a minimum capacity factor
+        be met on average over a year. It thus sets a minimum amount of 
+        production that must occur per unit capacity. The constraint can, 
+        for instance, be used to require a conversion technology 
+        to always operate at baseload capacity. This can be helpful for 
+        technologies where ramping is not possible or economical for reasons not 
+        captured by the model. 
+
+        **Mathematical formulation:**
+
+        .. math::
+            \\sum_t G_{i,n,t,y}^\\mathrm{r} \\geq 
+            8760 \\underline{\\pi}_{i,n,y} S_{i,n,y} 
+            \\qquad \\forall i,n,y
+
+        **Constraint parameters:** 
+        
+        - :math:`\\underline{\\pi}`: minimum annual average capacity factor of 
+          technology :math:`i` at node :math:`n` in time step :math:`t` and 
+          planning period :math:`y`\n
+
+        **Constraint variables:**
+
+        - :math:`S_{i,n,y}`: installed capacity of the technology :math:`i` at 
+          node :math:`n` in planning period :math:`y` \n
+    
+        - :math:`G_{i,n,t}^\\mathrm{r}`: reference carrier flow of the technology 
+          :math:`i` at node :math:`n` in time step :math:`t` in planning
+          period :math:`y`
 
 
         """
