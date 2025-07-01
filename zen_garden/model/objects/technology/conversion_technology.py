@@ -190,7 +190,10 @@ class ConversionTechnology(Technology):
         # slope of linearly modeled conversion efficiencies
         optimization_setup.parameters.add_parameter(name="conversion_factor", index_names=["set_conversion_technologies", "set_dependent_carriers", "set_nodes", "set_time_steps_operation"],
             doc="Parameter which specifies the conversion factor", calling_class=cls)
-
+        # minimum annual average capacity factor
+        optimization_setup.parameters.add_parameter(name="min_average_capacity_factor", index_names=["set_conversion_technologies", "set_nodes", "set_time_steps_yearly"],
+            doc="Minimum annual average availability factor", calling_class=cls)
+            
         # add params of the child classes
         for subclass in cls.__subclasses__():
             if np.size(optimization_setup.system[subclass.label]):
@@ -406,18 +409,19 @@ class ConversionTechnologyRules(GenericRule):
         if len(techs) == 0:
             return
         nodes = self.sets["set_nodes"]
-        times = self.parameters.max_load.coords["set_time_steps_operation"]
-        time_step_year = xr.DataArray([self.optimization_setup.energy_system.time_steps.convert_time_step_operation2year(t) for t in times.data], coords=[times])
+        times = self.sets["set_time_steps_yearly"]
+        mask = self.parameters.min_average_capacity_factor.loc[techs, nodes, times] != np.inf
         term_capacity = (
-                self.parameters.max_load.loc[techs, "power", nodes, :]
-                * self.variables["capacity"].loc[techs, "power", nodes, time_step_year]
-            ).rename({"set_technologies": "set_conversion_technologies", "set_location": "set_nodes"})
-        term_reference_flow = self.get_flow_expression_conversion(techs,  nodes)
-        lhs = term_capacity - term_reference_flow
+                self.parameters.min_average_capacity_factor.loc[techs, nodes, times]
+                * self.variables["capacity"].loc[techs, "power", nodes, times].rename(
+                    {"set_technologies": "set_conversion_technologies", "set_location": "set_nodes"})
+            )
+        term_annual_production = (self.get_flow_expression_conversion(techs,  nodes)*self.get_year_time_step_duration_array()).sum("set_time_steps_operation")
+        lhs = term_annual_production.where(mask) - term_capacity.where(mask)
         rhs = 0
         constraints = lhs >= rhs
 
-        self.constraints.add_constraint("constraint_capacity_factor_conversion", constraints)
+        self.constraints.add_constraint("constraint_minimum_average_capacity_factor", constraints)
 
     def constraint_opex_emissions_technology_conversion(self):
         """ calculate opex and carbon emissions of each technology
