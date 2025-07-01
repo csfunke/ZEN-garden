@@ -57,7 +57,7 @@ class ConversionTechnology(Technology):
         # get conversion efficiency and capex
         self.get_conversion_factor()
         self.opex_specific_fixed = self.data_input.extract_input_data("opex_specific_fixed", index_sets=["set_nodes", "set_time_steps_yearly"], time_steps="set_time_steps_yearly", unit_category={"money": 1, "energy_quantity": -1, "time": 1})
-        self.min_average_capacity_factor = self.data_input.extract_input_data("min_average_capacity_factor", index_sets=["set_nodes", "set_time_steps_yearly"], time_steps="set_time_steps_yearly", unit_category={})
+        self.min_average_load = self.data_input.extract_input_data("min_average_load", index_sets=["set_nodes", "set_time_steps_yearly"], time_steps="set_time_steps_yearly", unit_category={})
 
         self.convert_to_fraction_of_capex()
 
@@ -191,8 +191,8 @@ class ConversionTechnology(Technology):
         optimization_setup.parameters.add_parameter(name="conversion_factor", index_names=["set_conversion_technologies", "set_dependent_carriers", "set_nodes", "set_time_steps_operation"],
             doc="Parameter which specifies the conversion factor", calling_class=cls)
         # minimum annual average capacity factor
-        optimization_setup.parameters.add_parameter(name="min_average_capacity_factor", index_names=["set_conversion_technologies", "set_nodes", "set_time_steps_yearly"],
-            doc="Minimum annual average availability factor", calling_class=cls)
+        optimization_setup.parameters.add_parameter(name="min_average_load", index_names=["set_conversion_technologies", "set_nodes", "set_time_steps_yearly"],
+            doc="Minimum annual average load factor", calling_class=cls)
             
         # add params of the child classes
         for subclass in cls.__subclasses__():
@@ -371,7 +371,7 @@ class ConversionTechnologyRules(GenericRule):
 
 
     def constraint_minimum_average_capacity_factor(self):
-        """ sets minimum annual production per unit of installed capacity
+        """ Sets minimum annual production per unit of installed capacity.
 
         This function adds a constraint requiring that a minimum capacity factor
         be met on average over a year. It thus sets a minimum amount of 
@@ -390,7 +390,7 @@ class ConversionTechnologyRules(GenericRule):
 
         **Constraint parameters:** 
         
-        - :math:`\\underline{\\pi}`: minimum annual average capacity factor of 
+        - :math:`\\underline{\\pi}`: minimum average load of 
           technology :math:`i` at node :math:`n` in time step :math:`t` and 
           planning period :math:`y`\n
 
@@ -410,9 +410,10 @@ class ConversionTechnologyRules(GenericRule):
             return
         nodes = self.sets["set_nodes"]
         times = self.sets["set_time_steps_yearly"]
-        mask = self.parameters.min_average_capacity_factor.loc[techs, nodes, times] != np.inf
+        mask = ~np.isclose(self.parameters.min_average_load.loc[techs, nodes, times],0)
         term_capacity = (
-                self.parameters.min_average_capacity_factor.loc[techs, nodes, times]
+                self.parameters.min_average_load.loc[techs, nodes, times]
+                * self.system.unaggregated_time_steps_per_year
                 * self.variables["capacity"].loc[techs, "power", nodes, times].rename(
                     {"set_technologies": "set_conversion_technologies", "set_location": "set_nodes"})
             )
