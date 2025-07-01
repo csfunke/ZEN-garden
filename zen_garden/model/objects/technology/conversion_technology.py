@@ -405,14 +405,18 @@ class ConversionTechnologyRules(GenericRule):
 
 
         """
+        #get dimensions
         techs = self.sets["set_conversion_technologies"]
         if len(techs) == 0:
             return
         nodes = self.sets["set_nodes"]
         times = self.sets["set_time_steps_yearly"]
-        mask = ~np.isclose(self.parameters.min_average_load.loc[techs, nodes, times],0)
+        # define mask
+        min_average_load = self.parameters.min_average_load.loc[techs, nodes, times]
+        mask = xr.DataArray(~np.isclose(min_average_load,0), dims = min_average_load.dims, coords= min_average_load.coords)
+        #create constraint
         term_capacity = (
-                self.parameters.min_average_load.loc[techs, nodes, times]
+                min_average_load
                 * self.system.unaggregated_time_steps_per_year
                 * self.variables["capacity"].loc[techs, "power", nodes, times].rename(
                     {"set_technologies": "set_conversion_technologies", "set_location": "set_nodes"})
