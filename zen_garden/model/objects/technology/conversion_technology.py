@@ -373,7 +373,7 @@ class ConversionTechnologyRules(GenericRule):
     def constraint_minimum_average_capacity_factor(self):
         """ Sets minimum annual production per unit of installed capacity.
 
-        This function adds a constraint requiring that a minimum capacity factor
+        This constraint requires that a minimum capacity factor
         be met on average over a year. It thus sets a minimum amount of 
         production that must occur per unit capacity. The constraint can, 
         for instance, be used to require a conversion technology 

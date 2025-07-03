@@ -1073,6 +1073,12 @@ If no physically motivated capacity limit :math:`s^\mathrm{max}_{h,p,y}` exists,
 :math:`s^\mathrm{max}_{h,p,y}` must be large enough to ensure that the 
 technology is not constrained by the capacity limit (Big-M parameter).
 
+Minimum full-load hours
+-----------------------
+
+.. docstring_method:: zen_garden.model.objects.technology.conversion_technology.ConversionTechnologyRules.constraint_minimum_average_capacity_factor
+
+This constraint is currently only available for conversion technologies.
 
 .. _math_formulation.min_capacity_installation:
 
