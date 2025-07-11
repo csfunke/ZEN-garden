@@ -39,8 +39,8 @@ class ComponentType(Enum):
 
 class TimestepType(Enum):
     yearly: str = "year"
-    operational: str = "time_operation"
-    storage: str = "time_storage_level"
+    operational: str = "set_time_steps_operation"
+    storage: str = "set_time_steps_storage"
 
     @classmethod
     def get_time_steps_names(cls) -> list[str]:
@@ -213,6 +213,8 @@ class Scenario():
                 time_index = set(index_names).intersection(set(TimestepType.get_time_steps_names()))
                 timestep_name = time_index.pop() if len(time_index) > 0 else None
                 timestep_type = TimestepType.get_time_step_type(timestep_name)
+                if component_name is 'capacity':
+                    print("Hi")
 
                 doc = get_doc(h5_file,component_name,version)
 
