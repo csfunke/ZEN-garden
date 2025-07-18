@@ -61,7 +61,7 @@ def main(config, dataset_path=None, job_index=None, folder_output_path=None):
     ScenarioUtils.clean_scenario_folder(config, out_folder)
     # add operations-only phase when necessary
     phases = ['capacity and operation']
-    if config.analysis.include_operation_only_phase:
+    if config.system.include_operation_only_phase:
         phases.append('operation')
     ### ITERATE THROUGH SCENARIOS
     for scenario, scenario_dict in zip(scenarios, elements):
@@ -114,7 +114,7 @@ def main(config, dataset_path=None, job_index=None, folder_output_path=None):
                 Postprocess(optimization_setup, scenarios=config.scenarios, subfolder=subfolder,
                             model_name=model_name, scenario_name=scenario_name, param_map=param_map)
                 #save installed capacities for operations-only phase
-                if config.analysis.include_operation_only_phase and phase == 'capacity and operation':
+                if config.system.include_operation_only_phase and phase == 'capacity and operation':
                     capacity_addition = optimization_setup.model.solution["capacity_addition"].to_series().dropna()
                     capacity_investment = optimization_setup.model.solution["capacity_investment"].to_series().dropna()
 

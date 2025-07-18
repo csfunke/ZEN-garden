@@ -1077,7 +1077,7 @@ class StringUtils:
                 subfolder = Path(mf_f_string)
 
         # handle two-phase simulations
-        if config.analysis.include_operation_only_phase:
+        if config.system.include_operation_only_phase:
             if phase == 'capacity and operation':
                 subfolder = Path(subfolder), Path('capacity')
             elif phase == 'operation':
