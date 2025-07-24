@@ -881,6 +881,84 @@
             ]
         }
     },
+    "test_1x": {
+        "none": {
+            "capacity": [
+                {
+                    "index": ["natural_gas_boiler", "power", "DE", 0],
+                    "value": 110.0
+                },
+                {
+                    "index": ["natural_gas_boiler", "power", "CH", 0],
+                    "value": 0.0
+                },
+                {
+                    "index": ["natural_gas_boiler", "power", "FR", 0],
+                    "value": 60.0
+                },
+                {
+                    "index": ["heat_pipeline", "power", "CH-DE", 0],
+                    "value": 0.0
+                },
+                {
+                    "index": ["heat_pipeline", "power", "DE-CH", 0],
+                    "value": 10.0
+                }
+            ],
+            "constraint_nodal_energy_balance": [
+                {
+                    "index": ["heat", "CH", 0],
+                    "value": 0.002207
+                },
+                {
+                    "index": ["heat", "DE", 0],
+                    "value": 0.002107
+                },
+                {
+                    "index": ["heat", "FR", 0],
+                    "value": 0.001100
+                },
+                {
+                    "index": ["natural_gas", "CH", 0],
+                    "value": 0.001000
+                },
+                {
+                    "index": ["natural_gas", "DE", 0],
+                    "value": 0.001000
+                },
+                {
+                    "index": ["natural_gas", "FR", 0],
+                    "value": 0.001000
+                }
+            ],
+            "constraint_nodal_energy_balance_operation": [
+                {
+                    "index": ["heat", "CH", 0],
+                    "value": 0.001200
+                },
+                {
+                    "index": ["heat", "DE", 0],
+                    "value": 0.001100
+                },
+                {
+                    "index": ["heat", "FR", 0],
+                    "value": 0.001100
+                },
+                {
+                    "index": ["natural_gas", "CH", 0],
+                    "value": 0.001000
+                },
+                {
+                    "index": ["natural_gas", "DE", 0],
+                    "value": 0.001000
+                },
+                {
+                    "index": ["natural_gas", "FR", 0],
+                    "value": 0.001000
+                }
+            ]
+        }
+    },
     "test_2a": {
         "none": {
             "flow_import": [
