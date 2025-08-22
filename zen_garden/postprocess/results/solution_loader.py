@@ -238,13 +238,13 @@ class Scenario():
             h5_file = h5py.File(file_path)
             version = get_solution_version(self)
             for component_name in h5_file.keys():
+                print(component_name)
+                if component_name == "capacity":
+                    print("hi")
                 index_names = get_index_names(h5_file,component_name,version)
                 time_index = set(index_names).intersection(set(TimestepType.get_time_steps_names()))
                 timestep_name = time_index.pop() if len(time_index) > 0 else None
                 timestep_type = TimestepType.get_time_step_type(timestep_name)
-                if component_name is 'capacity':
-                    print("Hi")
-
                 doc = get_doc(h5_file,component_name,version)
 
                 has_units = get_has_units(h5_file,component_name,version)
@@ -424,7 +424,7 @@ class SolutionLoader():
                     if keep_raw:
                         mf_idx = subfolder_name.replace("MF_", "")
                     else:
-                        continue
+                        continue 
                 else:
                     mf_idx = int(subfolder_name.replace("MF_", ""))
                 file_path = os.path.join(
