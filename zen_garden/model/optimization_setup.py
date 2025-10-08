@@ -43,9 +43,11 @@ class OptimizationSetup(object):
         :param scenario_dict: dictionary defining the scenario
         :param input_data_checks: input data checks object
         """
+        # store configurations
         self.analysis = copy.deepcopy(config.analysis)
         self.system = copy.deepcopy(config.system)
         self.solver = copy.deepcopy(config.solver)
+        # add input_data_checks
         self.input_data_checks = input_data_checks
         self.input_data_checks.optimization_setup = self
         # create a dictionary with the paths to access the model inputs and check if input data exists
@@ -83,6 +85,8 @@ class OptimizationSetup(object):
         self.operation_only_phase = False
 
         # Init the energy system
+        # Also initializes unit handling object and sets base units
+        # Reads attributes.json of energy system but nothing else
         self.energy_system = EnergySystem(optimization_setup=self)
 
         # add Elements to optimization

@@ -42,22 +42,31 @@ def main(config, dataset_path=None, job_index=None, folder_output_path=None):
     if folder_output_path is not None:
         config.analysis.folder_output = folder_output_path
     logging.info(f"Optimizing for dataset {config.analysis.dataset}")
+
     # get the abs path to avoid working dir stuff
     config.analysis.dataset = os.path.abspath(config.analysis.dataset)
     config.analysis.folder_output = os.path.abspath(config.analysis.folder_output)
     config.analysis.zen_garden_version = version
+
     ### SYSTEM CONFIGURATION
+
+    # check that config files (system and analysis) are valid
+    # does not load any data beyond config files
     input_data_checks = InputDataChecks(config=config, optimization_setup=None)
     input_data_checks.check_dataset()
     input_data_checks.read_system_file(config)
     input_data_checks.check_technology_selections()
     input_data_checks.check_year_definitions()
+
     # overwrite default system and scenario dictionaries
     scenarios, elements = ScenarioUtils.get_scenarios(config, job_index)
+
     # get the name of the dataset
     model_name, out_folder = StringUtils.setup_model_folder(config.analysis, config.system)
+    
     # clean sub-scenarios if necessary
     ScenarioUtils.clean_scenario_folder(config, out_folder)
+
     ### ITERATE THROUGH SCENARIOS
     for scenario, scenario_dict in zip(scenarios, elements):
         # FORMULATE THE OPTIMIZATION PROBLEM

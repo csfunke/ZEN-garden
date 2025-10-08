@@ -13,7 +13,7 @@ from zen_garden.utils import copy_dataset_example
 
 def run_module(args=None, config = "./config.py", dataset = None, 
                folder_output = None, job_index = None, job_index_var = "SLURM_ARRAY_TASK_ID",
-               download_example = None):
+               download_example = None, existing_capacities_from_file = None):
     """
     Runs the main function of ZEN-Garden
 

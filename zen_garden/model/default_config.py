@@ -24,6 +24,7 @@ The current structure of classes in which defaults are set is as follows:
     |
     |--Solver
     |--System
+    |  `ParamsFromSimulation
     `--Scenario
 
 
@@ -77,6 +78,7 @@ class Subsets(Subscriptable):
     }
 
 
+
 class HeaderDataInputs(Subscriptable):
     
     """
@@ -117,6 +119,19 @@ class HeaderDataInputs(Subscriptable):
     set_capacity_types: str = "capacity_type"
 
 
+class FromResults(Subscriptable):
+    """
+    Class which contains the configurations for using existing capacities and
+    existing emissions from past simulation results. This can be used to create
+    myopic foresight simulations or run separate capacity planning and operation
+    models.
+    """
+    existing_capacity: Optional[str] = None
+    existing_capacity_max_year: Optional[int] = None
+    existing_emissions: Optional[str] = None
+    existing_emissions_max_year: Optional[int] = None
+
+
 class System(Subscriptable):
     """
     Class which contains the system configuration. This defines for example the set of carriers, technologies, etc.
@@ -153,6 +168,7 @@ class System(Subscriptable):
     allow_investment: bool = True
     storage_charge_discharge_binary: bool = False
     include_operation_only_phase: bool = False
+    from_results: FromResults = FromResults()
 
 
 
@@ -199,7 +215,6 @@ class TimeSeriesAggregation(Subscriptable):
     rescaleClusterPeriods: bool = False
     representationMethod: str = "meanRepresentation"
     resolution: int = 1
-
 
 class Analysis(Subscriptable):
     """
