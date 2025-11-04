@@ -6,12 +6,12 @@ import shutil
 import os
 import argparse
 import sys
+import json
 
 
 
 def operational_scenarios(args = None, config = "./config.py", dataset = None, 
-               folder_output = None, job_index = None, job_index_var = "SLURM_ARRAY_TASK_ID",
-               download_example = None):
+               folder_output = None, job_index = None, job_index_var = "SLURM_ARRAY_TASK_ID"):
     
     
     # read and parse ZEN-garden input arguments
@@ -34,8 +34,6 @@ def operational_scenarios(args = None, config = "./config.py", dataset = None,
     parser.add_argument("--job_index", required=False, type=str, default=job_index, help="A comma separated list (no spaces) of indices of the scenarios to run, if None, all scenarios are run in sequence")
     parser.add_argument("--job_index_var", required=False, type=str, default=job_index_var, help="Try to read out the job index from the environment variable specified here. "
                                                                                                          "If both --job_index and --job_index_var are specified, --job_index will be used.")
-    parser.add_argument("--download_example", required=False, type=str, default=download_example, help="Downloads an example data set to the current working directory. The argument should be the name of a dataset example in documentation/dataset_examples. This command will copy the dataset and the config to the current folder. It will not run ZEN-garden.")
-
     args = parser.parse_args(args)
     
     # extract file path and name of the dataset
@@ -53,11 +51,17 @@ def operational_scenarios(args = None, config = "./config.py", dataset = None,
     shutil.copyfile(args.config, config_op)
 
     # run ZEN-garden on the original dataset
-    run_module(dataset = dataset, config = config)
+    run_module(dataset = dataset, config = config, 
+               folder_output = folder_output, job_index = job_index, 
+               job_index_var = job_index_var)
 
     # extract results on added capacity
     out_dir = dataset_path / "outputs" / dataset_name
     capacity_addition_2_existing_capacity(out_dir, dataset_op)
+    modify_json(
+        dataset_op / "system.json", 
+        {"allow_investment": False}
+    )
 
     # run operations only simulations
     print("Running Operational Scenarios")       
@@ -147,7 +151,17 @@ def capacity_addition_2_existing_capacity(out_dir, dataset_op):
                         index = False
                     )
 
-
+def modify_json(file_path, change_dict):
+    
+    """
+    Modify a json file according to a change dictionary
+    """
+    with open(file_path, 'r+') as f:
+        data = json.load(f)
+        data['id'] = 134 # <--- add `id` value.
+        f.seek(0)        # <--- should reset file position to the beginning.
+        json.dump(data, f, indent=4)
+        f.truncate()     # remove remaining part
 
 if __name__ == "__main__":
     operational_scenarios(dataset = "./data/test_1j", config="./data/config.json")
