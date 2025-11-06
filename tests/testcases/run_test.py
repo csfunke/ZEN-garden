@@ -10,6 +10,7 @@ import pytest
 from zen_garden._internal import main
 from zen_garden.__main__ import run_module
 from zen_garden.postprocess.results import Results
+from zen_garden.wrapper.operation_scenarios import operation_scenarios
 
 
 # fixtures
@@ -279,6 +280,24 @@ def test_1j(folder_path):
     # read the results and check again
     res = Results(os.path.join(folder_path, "outputs", data_set_name))
     compare_variables_results(data_set_name, res, folder_path)
+
+def test_1k(folder_path):
+    # run the test
+    data_set_name = "test_1k"
+    data_set_name_op = data_set_name + "__operation"
+    operation_scenarios(
+        config=os.path.join(folder_path,"config_duals.json"),
+        dataset=os.path.join(folder_path,data_set_name),
+        dataset_op = os.path.join(folder_path,data_set_name_op),
+        folder_output=os.path.join(folder_path,"outputs"),
+        delete_data="False"
+    )
+
+    # read the results and check again
+    res_cap = Results(os.path.join(folder_path, "outputs", data_set_name))
+    res_op = Results(os.path.join(folder_path, "outputs", data_set_name_op))
+    compare_variables_results(data_set_name + "_capacity", res_cap, folder_path)
+    compare_variables_results(data_set_name + "_operation", res_op, folder_path)
 
 def test_2a(folder_path):
     # run the test
@@ -669,4 +688,4 @@ def test_10a(folder_path):
 
 if __name__ == "__main__":
     folder_path = os.path.dirname(__file__)
-    test_1a(folder_path)
+    test_1k(folder_path)
