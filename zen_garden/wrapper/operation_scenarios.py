@@ -58,8 +58,6 @@ def operation_scenarios(
     if system_op is None:
         system_op = Path(dataset_path) / dataset_name / "system.json"
 
-
-
     # run ZEN-garden on the original dataset
     run_module(dataset = dataset, config = config, 
                folder_output = folder_output, job_index = job_index, 

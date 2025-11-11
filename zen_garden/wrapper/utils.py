@@ -18,18 +18,9 @@ def capacity_addition_2_existing_capacity(out_dir, dataset_op):
     # load results
     r = Results(path=out_dir)
     assert 'capacity_addition' in r.get_component_names('variable'), "Results have no variable named capacity addition"
-    capacity_addition = r.get_total('capacity_addition')
+    capacity_addition_raw = r.get_total('capacity_addition')
     system = r.get_system()
-    capacity_addition = r.get_total('capacity_addition')
 
-    # reindex capacity addition so that it contains values for all combinations
-    # of technologies and nodes
-    system = r.get_system()
-    index_full = pd.MultiIndex.from_product(
-        [system.set_technologies, ["power", "energy"], system.set_nodes],
-        names = capacity_addition.index.names
-    )
-    capacity_addition = capacity_addition.reindex(index_full)
 
     # add as capacities to input files of operations simulation
 
@@ -37,10 +28,25 @@ def capacity_addition_2_existing_capacity(out_dir, dataset_op):
     technologies = {
         "set_conversion_technologies": system.set_conversion_technologies,
         "set_transport_technologies": system.set_transport_technologies,
-        "set_storage_technologies": system.set_storage_technologies
+        "set_storage_technologies": system.set_storage_technologies,
+        "set_retrofitting_technologies": system.set_retrofitting_technologies
     }
     for element_name, elements in technologies.items():
-        print(element_name)
+        print(f"Transferring capacity for {element_name}")
+        if element_name == "set_transport_technologies":
+            location = r.get_total('set_nodes_on_edges').index.values
+            location_name = "edge"
+        else:
+            location = system.set_nodes
+            location_name = "node"
+
+        # reindex capacity addition so that it contains values for all combinations
+        # of technologies and nodes
+        index_full = pd.MultiIndex.from_product(
+            [elements, ["power", "energy"], location],
+            names = capacity_addition_raw.index.names
+        )
+        capacity_addition = capacity_addition_raw.reindex(index_full).sort_index()
         # Iterate over each technology in that type
         for tech in elements:
             tech_folder_op = (
@@ -60,24 +66,29 @@ def capacity_addition_2_existing_capacity(out_dir, dataset_op):
                     capacity_addition_tech = (
                         capacity_addition_tech.rename(
                             columns = {
-                                'location': 'node',
+                                'location': location_name,
                                 'level_1': 'year_construction',
                                 0: 'capacity_existing' + suffix
                             }
                         )
                     )
                     # load existing file
-                    capacity_existing = pd.read_csv(
-                        tech_folder_op / ("capacity_existing" + suffix + ".csv"),
+                    fp_capacity_existing = (
+                        tech_folder_op / ("capacity_existing" + suffix + ".csv")
                     )
-                    # merge
-                    capacity_existing = pd.concat(
-                        [capacity_existing, capacity_addition_tech]
-                    ).reset_index(drop = True)
+                    if os.path.exists(fp_capacity_existing):
+                        capacity_existing = pd.read_csv(fp_capacity_existing)
+
+                        # merge
+                        capacity_existing = pd.concat(
+                            [capacity_existing, capacity_addition_tech]
+                        ).reset_index(drop = True)
+                    else:
+                        capacity_existing = capacity_addition_tech
 
                     # sum capacities
                     capacity_existing = capacity_existing.groupby(
-                        by = ["node", "year_construction"]
+                        by = [location_name, "year_construction"]
                     ).sum().reset_index()
                     
                     # save
