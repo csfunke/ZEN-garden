@@ -28,15 +28,22 @@ def operation_scenarios(args=None,
         args = sys.argv[1:]
 
     # parse the args
-    description = "Run ZEN garden with a given config file. Per default, the config file will be read out from the " \
-                  "current working directory. You can specify a config file with the --config argument. However, " \
-                  "note that the output directory will always be the current working directory, independent of the " \
-                  "dataset specified in the config file."
+    description = "Run ZEN garden with a given config file. Per default, the" \
+                  "config file will be read out from the current working " \
+                  "directory. You can specify a config file with the --config "\
+                  "argument. However, note that the output directory will " \
+                  "always be the current working directory, independent of " \
+                  "the dataset specified in the config file."
     parser = argparse.ArgumentParser(
         description=description,
         add_help=True,
         usage=
-        "usage: python -m zen_garden.wrapper.operational_scenarios [-h] [--config CONFIG] [--dataset DATASET] [--folder_output FOLDER_OUTPUT] [--config_op CONFIG_OP] [--dataset_op DATASET_OP], [--system_op SYSTEM_OP] [--scenarios_op SCENARIOS_OP] [--job_index JOB_INDEX] [--job_index_var JOB_INDEX_VAR] [--delete_data TRUE]"
+        "usage: python -m zen_garden.wrapper.operational_scenarios [-h] " \
+        "[--config CONFIG] [--dataset DATASET] [--folder_output FOLDER_OUTPUT] "\
+        "[--config_op CONFIG_OP] [--dataset_op DATASET_OP], " \
+        "[--system_op SYSTEM_OP] [--scenarios_op SCENARIOS_OP] " \
+        "[--job_index JOB_INDEX] [--job_index_var JOB_INDEX_VAR] "\
+        "[--delete_data TRUE]"
     )
     # TODO make json config default
     parser.add_argument(
@@ -45,7 +52,8 @@ def operation_scenarios(args=None,
         type=str,
         default=config,
         help=
-        "The config file used to run the capacity expansion model, defaults to config.py in the current directory."
+        "The config file used to run the capacity expansion model, defaults " \
+        "to config.py in the current directory."
     )
     parser.add_argument(
         "--dataset",
@@ -53,7 +61,9 @@ def operation_scenarios(args=None,
         type=str,
         default=dataset,
         help=
-        "Path to the dataset used for the run. IMPORTANT: This will overwrite the config.analysis.folder_output attribute and the config.solver.solver_dir attribute of the --config file!"
+        "Path to the dataset used for the run. IMPORTANT: This will overwrite "\
+        " the config.analysis.folder_output attribute and the " \
+        "config.solver.solver_dir attribute of the --config file!"
     )
     parser.add_argument(
         "--folder_output",
@@ -61,7 +71,9 @@ def operation_scenarios(args=None,
         type=str,
         default=folder_output,
         help=
-        "Path to the folder where results of the capacity-expansion runs are stored. IMPORTANT: This will overwrite the config.analysis.folder_output attribute of the --config file! ."
+        "Path to the folder where results of the capacity-expansion runs " \
+        "are stored. IMPORTANT: This will overwrite the " \
+        "config.analysis.folder_output attribute of the --config file! ."
     )
     parser.add_argument(
         "--config_op",
@@ -69,7 +81,8 @@ def operation_scenarios(args=None,
         type=str,
         default=config_op,
         help=
-        "The config file used to run the operation-only model, defaults to --config."
+        "The config file used to run the operation-only model, defaults to " \
+        " --config."
     )
     parser.add_argument(
         "--dataset_op",
@@ -77,7 +90,8 @@ def operation_scenarios(args=None,
         type=str,
         default=dataset_op,
         help=
-        "Name of the dataset used for the operation-only runs. The outputs will be saved under this dataset name"
+        "Name of the dataset used for the operation-only runs. The outputs " \
+        "will be saved under this dataset name"
     )
     parser.add_argument(
         "--scenarios_op",
@@ -85,7 +99,8 @@ def operation_scenarios(args=None,
         type=str,
         default=scenarios_op,
         help=
-        "Path to the scenarios.json file used in the operation-only runs. Defaults to the scenarios.json file from --dataset"
+        "Path to the scenarios.json file used in the operation-only runs. " \
+        "Defaults to the scenarios.json file from --dataset"
     )
     parser.add_argument(
         "--system_op",
@@ -93,7 +108,8 @@ def operation_scenarios(args=None,
         type=str,
         default=system_op,
         help=
-        "Path to the systems.json file used in the operation-only runs. Defaults to the system.json file from --dataset"
+        "Path to the systems.json file used in the operation-only runs. " \
+        "Defaults to the system.json file from --dataset"
     )
     parser.add_argument(
         "--job_index",
@@ -101,7 +117,8 @@ def operation_scenarios(args=None,
         type=str,
         default=job_index,
         help=
-        "A comma separated list (no spaces) of indices of the scenarios to run, if None, all scenarios are run in sequence"
+        "A comma separated list (no spaces) of indices of the scenarios to " \
+        "run, if None, all scenarios are run in sequence"
     )
     parser.add_argument(
         "--job_index_var",
@@ -109,7 +126,9 @@ def operation_scenarios(args=None,
         type=str,
         default=job_index_var,
         help=
-        "Try to read out the job index from the environment variable specified here. If both --job_index and --job_index_var are specified, --job_index will be used."
+        "Try to read out the job index from the environment variable " \
+        "specified here. If both --job_index and " \
+        "--job_index_var are specified, --job_index will be used."
     )
     parser.add_argument(
         "--delete_data",
@@ -117,7 +136,8 @@ def operation_scenarios(args=None,
         type=str,
         default=delete_data,
         help=
-        "String ('True' or 'False') that specifies whether to delete the operational dataset at the end of the process. Defaults to 'T'"
+        "String ('True' or 'False') that specifies whether to delete the " \
+        "operational dataset at the end of the process. Defaults to 'T'"
     )
     args = parser.parse_args(args)
 
