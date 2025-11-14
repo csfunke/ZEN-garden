@@ -17,10 +17,10 @@ def capacity_addition_2_existing_capacity(out_dir, dataset_op):
 
     # load results
     r = Results(path=out_dir)
-    assert 'capacity_addition' in r.get_component_names('variable'), "Results have no variable named capacity addition"
+    assert 'capacity_addition' in r.get_component_names(
+        'variable'), "Results have no variable named capacity addition"
     capacity_addition_raw = r.get_total('capacity_addition')
     system = r.get_system()
-
 
     # add as capacities to input files of operations simulation
 
@@ -44,97 +44,86 @@ def capacity_addition_2_existing_capacity(out_dir, dataset_op):
         # of technologies and nodes
         index_full = pd.MultiIndex.from_product(
             [elements, ["power", "energy"], location],
-            names = capacity_addition_raw.index.names
-        )
-        capacity_addition = capacity_addition_raw.reindex(index_full).sort_index()
+            names=capacity_addition_raw.index.names)
+        capacity_addition = capacity_addition_raw.reindex(
+            index_full).sort_index()
         # Iterate over each technology in that type
         for tech in elements:
-            tech_folder_op = (
-                dataset_op / 
-                "set_technologies" / 
-                element_name /
-                tech
-            )
+            tech_folder_op = (dataset_op / "set_technologies" / element_name /
+                              tech)
             # Repeat for power capacity and energy capacity separately
-            for (type, suffix) in [("power",""), ("energy", "_energy")]:
+            for (type, suffix) in [("power", ""), ("energy", "_energy")]:
                 capacity_addition_tech = capacity_addition.loc[(tech, type)]
                 capacity_addition_tech = (
-                    capacity_addition_tech.stack().dropna().reset_index()
-                )
+                    capacity_addition_tech.stack().dropna().reset_index())
                 if capacity_addition_tech.shape[0] != 0:
                     # rename columns
-                    capacity_addition_tech = (
-                        capacity_addition_tech.rename(
-                            columns = {
-                                'location': location_name,
-                                'level_1': 'year_construction',
-                                0: 'capacity_existing' + suffix
-                            }
-                        )
-                    )
+                    capacity_addition_tech = (capacity_addition_tech.rename(
+                        columns={
+                            'location': location_name,
+                            'level_1': 'year_construction',
+                            0: 'capacity_existing' + suffix
+                        }))
                     # load existing file
                     fp_capacity_existing = (
-                        tech_folder_op / ("capacity_existing" + suffix + ".csv")
-                    )
+                        tech_folder_op /
+                        ("capacity_existing" + suffix + ".csv"))
                     if os.path.exists(fp_capacity_existing):
                         capacity_existing = pd.read_csv(fp_capacity_existing)
 
                         # merge
                         capacity_existing = pd.concat(
-                            [capacity_existing, capacity_addition_tech]
-                        ).reset_index(drop = True)
+                            [capacity_existing,
+                             capacity_addition_tech]).reset_index(drop=True)
                     else:
                         capacity_existing = capacity_addition_tech
 
                     # sum capacities
                     capacity_existing = capacity_existing.groupby(
-                        by = [location_name, "year_construction"]
-                    ).sum().reset_index()
-                    
+                        by=[location_name, "year_construction"
+                            ]).sum().reset_index()
+
                     # save
                     capacity_existing.to_csv(
-                        tech_folder_op / ("capacity_existing" + suffix + ".csv"),
-                        mode = 'w',
-                        header = True,
-                        index = False
-                    )
+                        tech_folder_op /
+                        ("capacity_existing" + suffix + ".csv"),
+                        mode='w',
+                        header=True,
+                        index=False)
+
 
 def modify_json(file_path, change_dict):
-    
     """
     Modify a json file according to a change dictionary
     """
     with open(file_path, 'r+') as f:
         data = json.load(f)
-        
+
         # write new attribute
         for attr, value in change_dict.items():
-            data[attr] = value # <--- set attribute value
-        
+            data[attr] = value  # <--- set attribute value
+
         # write file
-        f.seek(0)        # move cursor to beginning of file
+        f.seek(0)  # move cursor to beginning of file
         json.dump(data, f, indent=4)
-        f.truncate()     # remove leftover pieces if old file was longer
+        f.truncate()  # remove leftover pieces if old file was longer
 
 
-def copy_dataset(old_dataset, new_dataset, system, scenarios = None):
+def copy_dataset(old_dataset, new_dataset, system, scenarios=None):
 
     #create new dataset for operational scenarios
     if os.path.exists(new_dataset):
         shutil.rmtree(new_dataset)
     os.makedirs(new_dataset)
     shutil.copytree(
-        Path(old_dataset) / "energy_system", 
-        Path(new_dataset) / "energy_system"
-    )
+        Path(old_dataset) / "energy_system",
+        Path(new_dataset) / "energy_system")
     shutil.copytree(
-        Path(old_dataset) / "set_carriers", 
-        Path(new_dataset) / "set_carriers"
-    )
+        Path(old_dataset) / "set_carriers",
+        Path(new_dataset) / "set_carriers")
     shutil.copytree(
-        Path(old_dataset) / "set_technologies", 
-        Path(new_dataset) / "set_technologies"
-    )
+        Path(old_dataset) / "set_technologies",
+        Path(new_dataset) / "set_technologies")
     shutil.copyfile(system, Path(new_dataset) / "system.json")
     if scenarios is not None:
         shutil.copyfile(scenarios, Path(new_dataset) / "scenarios.json")
