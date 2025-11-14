@@ -290,7 +290,7 @@ def test_1k(folder_path):
         dataset=os.path.join(folder_path,data_set_name),
         dataset_op = os.path.join(folder_path,data_set_name_op),
         folder_output=os.path.join(folder_path,"outputs"),
-        delete_data="False"
+        delete_data="True"
     )
 
     # read the results and check again
@@ -648,6 +648,23 @@ def test_7a(folder_path):
     res = Results(os.path.join(folder_path, "outputs", data_set_name))
     compare_variables_results(data_set_name, res, folder_path)
 
+def test_7b(folder_path):
+    # run the test
+    data_set_name = "test_7b"
+    data_set_name_op = data_set_name + "__operation"
+    operation_scenarios(
+        config=os.path.join(folder_path,"config_duals.json"),
+        dataset=os.path.join(folder_path,data_set_name),
+        dataset_op = os.path.join(folder_path,data_set_name_op),
+        folder_output=os.path.join(folder_path,"outputs"),
+        delete_data="True"
+    )
+
+    # read the results and check again
+    res_cap = Results(os.path.join(folder_path, "outputs", data_set_name))
+    res_op = Results(os.path.join(folder_path, "outputs", data_set_name_op))
+    compare_variables_results(data_set_name + "_capacity", res_cap, folder_path)
+    compare_variables_results(data_set_name + "_operation", res_op, folder_path)
 
 def test_8a(folder_path):
     # run the test
@@ -688,4 +705,4 @@ def test_10a(folder_path):
 
 if __name__ == "__main__":
     folder_path = os.path.dirname(__file__)
-    test_1k(folder_path)
+    test_7b(folder_path)

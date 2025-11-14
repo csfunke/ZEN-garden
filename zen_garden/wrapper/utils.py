@@ -26,10 +26,16 @@ def capacity_addition_2_existing_capacity(out_dir, dataset_op):
 
     #  Iterate over technology types: conversion, transport, storage
     technologies = {
-        "set_conversion_technologies": system.set_conversion_technologies,
-        "set_transport_technologies": system.set_transport_technologies,
-        "set_storage_technologies": system.set_storage_technologies,
-        "set_retrofitting_technologies": system.set_retrofitting_technologies
+        "set_conversion_technologies":
+        list(
+            set(system.set_conversion_technologies) -
+            set(system.set_retrofitting_technologies)),
+        "set_transport_technologies":
+        system.set_transport_technologies,
+        "set_storage_technologies":
+        system.set_storage_technologies,
+        "set_retrofitting_technologies":
+        system.set_retrofitting_technologies
     }
     for element_name, elements in technologies.items():
         print(f"Transferring capacity for {element_name}")
