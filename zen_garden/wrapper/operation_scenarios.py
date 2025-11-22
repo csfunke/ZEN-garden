@@ -9,8 +9,8 @@ import sys
 
 def operation_scenarios(args=None,
                         config="./config.py",
-                        dataset=None,
-                        folder_output=None,
+                        dataset = None,
+                        folder_output="./outputs",
                         config_op=None,
                         dataset_op=None,
                         scenarios_op=None,
@@ -142,7 +142,11 @@ def operation_scenarios(args=None,
     args = parser.parse_args(args)
 
     # clean inputs and set proper default values
-    [dataset_path, dataset_name] = os.path.split(Path(args.dataset))
+    if args.dataset is not None:
+        dataset = Path(args.dataset)
+        [dataset_path, dataset_name] = os.path.split(dataset)
+    else: 
+        ValueError("Dataset input must be provided in the operations wrappers")        
     if config_op is None:
         config_op = args.config
     if dataset_op is None:
@@ -151,21 +155,26 @@ def operation_scenarios(args=None,
         system_op = Path(dataset_path) / dataset_name / "system.json"
 
     # run ZEN-garden on the original dataset
-    run_module(dataset=dataset,
-               config=config,
-               folder_output=folder_output,
-               job_index=job_index,
-               job_index_var=job_index_var)
+    # run_module(args = "",
+    #            dataset=dataset,
+    #            config=config,
+    #            folder_output=folder_output,
+    #            job_index=job_index,
+    #            job_index_var=job_index_var)
 
-    #create new dataset for operational scenarios
+    # create new dataset for operational scenarios
     utils.copy_dataset(dataset,
                        dataset_op,
                        system=system_op,
                        scenarios=scenarios_op)
 
     # extract results on added capacity
+    rounding_value = 10**-5
     utils.capacity_addition_2_existing_capacity(
-        Path(folder_output) / dataset_name, dataset_op)
+        Path(folder_output) / dataset_name, 
+        dataset_op,
+        rounding_value
+    )
 
     # turn off capacity_investment
     utils.modify_json(
@@ -173,7 +182,8 @@ def operation_scenarios(args=None,
 
     # run operations only simulations
     print("Running Operational Scenarios -----------------------------")
-    run_module(dataset=dataset_op,
+    run_module(args = "",
+               dataset=dataset_op,
                config=config_op,
                folder_output=folder_output)
 
