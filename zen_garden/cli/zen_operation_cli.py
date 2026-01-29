@@ -34,6 +34,15 @@ def build_parser_op() -> argparse.ArgumentParser:
         "Defaults to the scenarios.json file from --dataset",
     )
     parser.add_argument(
+        "--job_index_op",
+        type=str,
+        required=False,
+        default=None,
+        help="Comma-separated list of scenario indices in the operational" \
+        "problem. If omitted, the environment variable specified by " \
+        "--job_index_var is used."
+    )
+    parser.add_argument(
         "--delete_data",
         action="store_true",
         help="Deletes the created operation-only models upon termination to avoid "
@@ -73,6 +82,7 @@ def create_zen_operation_cli() -> None:
 
     # Resolve job index
     job_index = resolve_job_index(args.job_index, args.job_index_var)
+    job_index_op = resolve_job_index(args.job_index_op, None)
 
     # run operation scenarios
     operation_scenarios(
@@ -80,6 +90,7 @@ def create_zen_operation_cli() -> None:
         dataset=args.dataset,
         folder_output=args.folder_output,
         job_index=job_index,
+        job_index_op=job_index_op,
         scenarios_op=args.scenarios_op,
         delete_data=args.delete_data,
     )
