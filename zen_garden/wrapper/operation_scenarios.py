@@ -13,8 +13,8 @@ def validate_inputs(
     dataset: Path | str,
     folder_output: Path | str | None,
     job_index: Iterable[int] | None,
-    job_index_op: Iterable[int] | None,,
-) -> tuple[Path, Path, List[int] | None]:
+    job_index_op: Iterable[int] | None,
+) -> tuple[Path, Path, List[int] | None, List[int] | None]:
     """Validate and normalize user-provided inputs.
 
     This function performs validates the inputs to ensure downstream
@@ -25,11 +25,11 @@ def validate_inputs(
     Args:
         dataset (Path | str): Path to the dataset directory used for the original
             capacity-expansion run. The path must exist.
-        folder_output (Path | str): Path to the output folder where the results 
+        folder_output (Path | str): Path to the output folder where the results
             of the capacity planning simulation are saved.
         job_index (List[int] | None): List of scenario indices to process. If
             None, all available scenarios will be processed.
-        job_index_op (List[int] | None): List of operational scenario indices to 
+        job_index_op (List[int] | None): List of operational scenario indices to
             process. If none, all available scenarios will be processed.
     Returns:
         Tuple
@@ -66,7 +66,7 @@ def validate_inputs(
         job_index_op_list = list(job_index_op)
         if not all(isinstance(i, int) for i in job_index_op_list):
             raise TypeError("job_index must be an iterable of integers")
-        
+
     return dataset, folder_output, job_index_list, job_index_op_list
 
 
@@ -158,7 +158,7 @@ def run_operational_simulation(
     dataset_op: Path,
     config: Path,
     folder_output: Path,
-    job_index_op: Iterable[int] | None
+    job_index_op: Iterable[int] | None,
 ) -> None:
     """Run an operational-only simulation.
 
@@ -174,8 +174,12 @@ def run_operational_simulation(
 
     """
     logger.info("Running operational simulation for %s", dataset_op.name)
-    run(dataset=dataset_op, config=config, folder_output=folder_output, 
-        job_index=job_index_op)
+    run(
+        dataset=dataset_op,
+        config=config,
+        folder_output=folder_output,
+        job_index=job_index_op,
+    )
 
 
 def cleanup_dataset(dataset_op: Path, delete_data: bool) -> None:
@@ -232,7 +236,8 @@ def operation_scenarios(
         - Emits log messages during execution.
     """
     dataset, folder_output, job_index_list, job_index_op_list = validate_inputs(
-        dataset, folder_output, job_index, job_index_op)
+        dataset, folder_output, job_index, job_index_op
+    )
 
     dataset_path = dataset.parent
     dataset_name = dataset.name
@@ -255,7 +260,7 @@ def operation_scenarios(
             dataset_op=dataset_op,
             config=config,
             folder_output=folder_output,
-            job_index_op=job_index_op
+            job_index_op=job_index_op_list,
         )
 
         cleanup_dataset(dataset_op, delete_data)
