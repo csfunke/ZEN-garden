@@ -1,0 +1,22 @@
+{"import_limit":
+    {"electricity":
+        {"transport_limit_in": {
+            "file": "transport_limit_in_s1"
+            }
+        }
+    },
+"export_limit":
+    {"electricity":
+        {"transport_limit_out": {
+            "file": "transport_limit_out_s2"
+            }
+        }
+    },
+"net_import_limit":
+    {"electricity":
+        {"transport_limit_net": {
+            "file": "transport_limit_net_s3"
+            }
+        }
+    }
+}

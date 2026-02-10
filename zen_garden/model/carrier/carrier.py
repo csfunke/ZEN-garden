@@ -103,6 +103,24 @@ class Carrier(Element):
             index_sets=[],
             unit_category={"money": 1, "energy_quantity": -1},
         )
+        self.transport_limit_in = self.data_input.extract_input_data(
+            "transport_limit_in",
+            index_sets=["set_nodes", "set_time_steps_yearly"],
+            time_steps="set_time_steps_yearly",
+            unit_category={"energy_quantity": 1},
+        )
+        self.transport_limit_out = self.data_input.extract_input_data(
+            "transport_limit_out",
+            index_sets=["set_nodes", "set_time_steps_yearly"],
+            time_steps="set_time_steps_yearly",
+            unit_category={"energy_quantity": 1},
+        )
+        self.transport_limit_net = self.data_input.extract_input_data(
+            "transport_limit_net",
+            index_sets=["set_nodes", "set_time_steps_yearly"],
+            time_steps="set_time_steps_yearly",
+            unit_category={"energy_quantity": 1},
+        )
 
     def overwrite_time_steps(self, base_time_steps):
         """Overwrites set_time_steps_operation.
@@ -198,11 +216,31 @@ class Carrier(Element):
             doc="Parameter which specifies the carbon intensity of carrier import",
             calling_class=cls,
         )
-        # carbon intensity carrier exmport
+        # carbon intensity carrier export
         optimization_setup.parameters.add_parameter(
             name="carbon_intensity_carrier_export",
             index_names=["set_carriers", "set_nodes", "set_time_steps_yearly"],
             doc="Parameter which specifies the carbon intensity of carrier export",
+            calling_class=cls,
+        )
+        optimization_setup.parameters.add_parameter(
+            name="transport_limit_in",
+            index_names=["set_carriers", "set_nodes", "set_time_steps_yearly"],
+            doc="Parameter which specifies the transport limit into the node",
+            calling_class=cls,
+        )
+        # transport limit out of the node
+        optimization_setup.parameters.add_parameter(
+            name="transport_limit_out",
+            index_names=["set_carriers", "set_nodes", "set_time_steps_yearly"],
+            doc="Parameter which specifies the transport limit out of the node",
+            calling_class=cls,
+        )
+        # net transport limit into the node
+        optimization_setup.parameters.add_parameter(
+            name="transport_limit_net",
+            index_names=["set_carriers", "set_nodes", "set_time_steps_yearly"],
+            doc="Parameter which specifies the net transport limit out of the node",
             calling_class=cls,
         )
 
@@ -321,6 +359,9 @@ class Carrier(Element):
 
         # limit import/export flow by availability for each year
         rules.constraint_availability_import_export_yearly()
+
+        # limit new imports of carrier
+        rules.constraint_transport_limit()
 
         # cost for carrier
         rules.constraint_cost_carrier()
@@ -502,6 +543,179 @@ class CarrierRules(GenericRule):
         )
         self.constraints.add_constraint(
             "constraint_availability_export_yearly", constraints_exp
+        )
+
+    def constraint_transport_limit(self):
+        """
+        Limit of the transport flow of carrier.
+
+        .. math::
+            \\sum_{t\\in\\mathcal{T}}\\tau_t\\sum_{j\\in\\mathcal{J}}
+            \\sum_{e\\in\\underline{\\mathcal{E}}}(F_{j,e,t}-F^\\mathrm{l}_{j,e,t})
+            \\leq b^\\mathrm{in}_{c,n,y} \n
+            \\sum_{t\\in\\mathcal{T}}\\tau_t\\sum_{j\\in\\mathcal{J}}
+            \\sum_{e'\\in\\overline{\\mathcal{E}}}F_{j,e',t})
+            \\leq b^\\mathrm{out}_{c,n,y}
+        :math:`F_{j,e,t}`: transported flow of carrier :math:`c` on ingoing
+        edges :math:`e` minues the losses :math:`F^\\mathrm{l}_{j,e,t})` of all
+        transport technologies :math:`j` at time step :math:`t`\n
+        :math:`F_{j,e',t}`: transported flow of carrier :math:`c` on outgoing
+        edges :math:`e'` at time step :math:`t`\n
+        :math:`b^\\mathrm{in}_{c,n,y}`: transport limit into the node :math:`n`
+        of carrier :math:`c` in year :math:`y` \n
+        :math:`b^\\mathrm{out}_{c,n,y}`: transport limit out of the node
+        :math:`n` of carrier :math:`c` in year :math:`y`\n
+        """
+        ### index sets
+        index_values, index_names = Carrier.create_custom_set(
+            ["set_carriers", "set_nodes", "set_time_steps_operation"],
+            self.optimization_setup,
+        )
+        index = ZenIndex(index_values, index_names)
+        # carrier flow transport technologies
+        if self.variables["flow_transport"].size > 0:
+            # recalculate all the edges
+            edges_in = {
+                node: self.energy_system.calculate_connected_edges(node, "in")
+                for node in self.sets["set_nodes"]
+            }
+            edges_out = {
+                node: self.energy_system.calculate_connected_edges(node, "out")
+                for node in self.sets["set_nodes"]
+            }
+            max_edges = max(
+                [len(edges_in[node]) for node in self.sets["set_nodes"]]
+                + [len(edges_out[node]) for node in self.sets["set_nodes"]]
+            )
+
+            # create the variables
+            flow_transport_in_vars = xr.DataArray(
+                -1,
+                coords=[
+                    self.parameters.demand.coords["set_carriers"],
+                    self.parameters.demand.coords["set_nodes"],
+                    self.parameters.demand.coords["set_time_steps_operation"],
+                    xr.DataArray(
+                        np.arange(
+                            len(self.sets["set_transport_technologies"])
+                            * (2 * max_edges + 1)
+                        ),
+                        dims=["_term"],
+                    ),
+                ],
+            )
+            flow_transport_in_coeffs = xr.full_like(
+                flow_transport_in_vars, np.nan, dtype=float
+            )
+            flow_transport_out_vars = flow_transport_in_vars.copy()
+            flow_transport_out_coeffs = xr.full_like(
+                flow_transport_in_vars, np.nan, dtype=float
+            )
+            for carrier, node in index.get_unique([0, 1]):
+                techs = [
+                    tech
+                    for tech in self.sets["set_transport_technologies"]
+                    if carrier in self.sets["set_reference_carriers"][tech]
+                ]
+                edges_in = self.energy_system.calculate_connected_edges(node, "in")
+                edges_out = self.energy_system.calculate_connected_edges(node, "out")
+
+                # get the variables for the in flow
+                in_vars_plus = (
+                    self.variables["flow_transport"].labels.loc[techs, edges_in, :].data
+                )
+                in_vars_plus = in_vars_plus.reshape((-1, in_vars_plus.shape[-1])).T
+                in_coefs_plus = np.ones_like(in_vars_plus)
+                in_vars_minus = (
+                    self.variables["flow_transport_loss"]
+                    .labels.loc[techs, edges_in, :]
+                    .data
+                )
+                in_vars_minus = in_vars_minus.reshape((-1, in_vars_minus.shape[-1])).T
+                in_coefs_minus = np.ones_like(in_vars_minus)
+                in_vars = np.concatenate([in_vars_plus, in_vars_minus], axis=1)
+                in_coefs = np.concatenate([in_coefs_plus, -in_coefs_minus], axis=1)
+                flow_transport_in_vars.loc[
+                    carrier, node, :, : in_vars.shape[-1] - 1
+                ] = in_vars
+                flow_transport_in_coeffs.loc[
+                    carrier, node, :, : in_coefs.shape[-1] - 1
+                ] = in_coefs
+
+                # get the variables for the out flow
+                out_vars_plus = (
+                    self.variables["flow_transport"]
+                    .labels.loc[techs, edges_out, :]
+                    .data
+                )
+                out_vars_plus = out_vars_plus.reshape((-1, out_vars_plus.shape[-1])).T
+                out_coefs_plus = np.ones_like(out_vars_plus)
+                flow_transport_out_vars.loc[
+                    carrier, node, :, : out_vars_plus.shape[-1] - 1
+                ] = out_vars_plus
+                flow_transport_out_coeffs.loc[
+                    carrier, node, :, : out_coefs_plus.shape[-1] - 1
+                ] = out_coefs_plus
+
+            # craete the linear expression
+            term_flow_transport_in = lp.LinearExpression(
+                xr.Dataset(
+                    {"coeffs": flow_transport_in_coeffs, "vars": flow_transport_in_vars}
+                ),
+                self.model,
+            )
+            term_flow_transport_out = lp.LinearExpression(
+                xr.Dataset(
+                    {
+                        "coeffs": flow_transport_out_coeffs,
+                        "vars": flow_transport_out_vars,
+                    }
+                ),
+                self.model,
+            )
+        else:
+            # if there is no carrier flow we just create empty arrays
+            term_flow_transport_in = (
+                self.variables["flow_import"].where(False).to_linexpr()
+            )
+            term_flow_transport_out = (
+                self.variables["flow_import"].where(False).to_linexpr()
+            )
+        # sum up over all operation time steps per year
+        time_step_duration = self.get_year_time_step_duration_array()
+        term_flow_transport_in = (
+            term_flow_transport_in.assign_coords(time_step_duration.coords)
+            * time_step_duration
+        ).sum("set_time_steps_operation")
+        term_flow_transport_out = (
+            term_flow_transport_out.assign_coords(time_step_duration.coords)
+            * time_step_duration
+        ).sum("set_time_steps_operation")
+        term_flow_transport_net = term_flow_transport_in - term_flow_transport_out
+        # transport limits
+        transport_limit_in = self.parameters.transport_limit_in
+        transport_limit_out = self.parameters.transport_limit_out
+        transport_limit_net = self.parameters.transport_limit_net
+        mask_limit_in = transport_limit_in != np.inf
+        mask_limit_out = transport_limit_out != np.inf
+        mask_limit_net = transport_limit_net != np.inf
+        # create the constraints
+        lhs_in = term_flow_transport_in.where(mask_limit_in)
+        lhs_out = term_flow_transport_out.where(mask_limit_out)
+        lhs_net = term_flow_transport_net.where(mask_limit_net)
+        rhs_in = transport_limit_in.where(mask_limit_in, 0.0)
+        rhs_out = transport_limit_out.where(mask_limit_out, 0.0)
+        rhs_net = transport_limit_net.where(mask_limit_net, 0.0)
+        constraints_in = lhs_in <= rhs_in
+        constraints_out = lhs_out <= rhs_out
+        constraints_net = lhs_net <= rhs_net
+        # add the constraints to the model
+        self.constraints.add_constraint("constraint_transport_limit_in", constraints_in)
+        self.constraints.add_constraint(
+            "constraint_transport_limit_out", constraints_out
+        )
+        self.constraints.add_constraint(
+            "constraint_transport_limit_net", constraints_net
         )
 
     def constraint_cost_carrier(self):
