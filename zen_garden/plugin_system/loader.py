@@ -8,6 +8,7 @@ import importlib
 from importlib.metadata import EntryPoint, entry_points
 from types import ModuleType
 
+from zen_garden.config import Config, ConfigBase
 from zen_garden.plugin_system.events import EventPublisher
 from zen_garden.workflow_step import workflow_step
 
@@ -67,7 +68,7 @@ def _load_installed_plugin(
     label="Register plugins; notify via after_model_schema_creation event",
 )
 def register_plugins(
-    plugins_config: dict[str, dict],
+    config: Config,
     source_package: str | None = None,
 ) -> dict[str, ModuleType]:
     """Import configured plugins and apply their configuration.
@@ -80,7 +81,7 @@ def register_plugins(
     instead of through installed entry points.
 
     Args:
-        plugins_config: Mapping of plugin names to configuration dictionaries.
+        config: The overall configuration object.
         source_package: Optional package containing plugin subpackages.
 
     Returns:
@@ -95,7 +96,7 @@ def register_plugins(
 
     installed_plugins = _get_installed_plugins() if source_package is None else {}
 
-    for plugin_name, plugin_config in plugins_config.items():
+    for plugin_name in config.plugins.keys():
         if source_package is None:
             plugin_module = _load_installed_plugin(
                 plugin_name,
@@ -106,19 +107,24 @@ def register_plugins(
                 f"{source_package}.{plugin_name}.plugin"
             )
 
-        if not hasattr(plugin_module, "config"):
+        if not hasattr(plugin_module, "Config"):
             raise AttributeError(
                 f"Plugin {plugin_name!r} does not expose the required "
-                f"module-level 'config' dictionary."
+                f"module-level 'Config' class."
             )
 
-        if not isinstance(plugin_module.config, dict):
+        if not issubclass(plugin_module.Config, ConfigBase):
             raise TypeError(
-                f"Plugin {plugin_name!r} exposes 'config', but it is not "
-                f"a dictionary."
+                f"Plugin {plugin_name!r} exposes 'Config', but it is not "
+                f"a subclass of ConfigBase."
             )
 
-        plugin_module.config.update(plugin_config)
+        # validate input and update config with default values for missing parameters
+        validated_config = plugin_module.Config.model_validate(
+            config.plugins[plugin_name]
+        )
+
+        config.plugins[plugin_name] = validated_config.model_dump()
         loaded_plugins[plugin_name] = plugin_module
 
     return loaded_plugins

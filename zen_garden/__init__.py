@@ -1,3 +1,4 @@
+from .config import ConfigBase
 from .model.component_types.constraint import GenericConstraint
 from .model.component_types.parameter import GenericParameter
 from .model.component_types.set import GenericSet
@@ -20,6 +21,7 @@ __all__ = [
     "compare_configs",
     "compare_model_values",
     "compare_dicts",
+    "ConfigBase",
     "Event",
     "EventPublisher",
     "GenericConstraint",

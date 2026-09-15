@@ -89,7 +89,7 @@ def run(
 
     # Register plugins. Plugins can modify the model schema and add new elements,
     # parameters, variables, and constraints
-    register_plugins(config_obj.plugins)
+    register_plugins(config_obj)
 
     # Give plugins a hook to inspect or modify the freshly created schema before
     # any scenario is run.
