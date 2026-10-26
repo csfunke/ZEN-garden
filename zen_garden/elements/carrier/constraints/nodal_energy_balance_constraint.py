@@ -69,7 +69,12 @@ class NodalEnergyBalanceConstraint(GenericConstraint):
         """
         index_values, index_names = (
             model_constructor.optimization_model.create_custom_set(
-                ["set_carriers", "set_nodes", "set_time_steps_operation"]
+                [
+                    "set_carriers",
+                    "set_nodes",
+                    "set_years",
+                    "set_representative_hours",
+                ]
             )
         )
         index = MultiIndexHelper(index_values, index_names)
@@ -118,7 +123,10 @@ class NodalEnergyBalanceConstraint(GenericConstraint):
                     "set_nodes"
                 ],
                 model_constructor.optimization_model.parameters.demand.coords[
-                    "set_time_steps_operation"
+                    "set_years"
+                ],
+                model_constructor.optimization_model.parameters.demand.coords[
+                    "set_representative_hours"
                 ],
                 xr.DataArray(
                     np.arange(
@@ -184,22 +192,28 @@ class NodalEnergyBalanceConstraint(GenericConstraint):
 
                 # get the variables for the in flow
                 in_vars_plus = select_flow_transport(techs, edges_in)
-                in_vars_plus = in_vars_plus.reshape((-1, in_vars_plus.shape[-1])).T
+                in_vars_plus = in_vars_plus.reshape(
+                    (-1, *in_vars_plus.shape[-2:])
+                ).transpose(1, 2, 0)
                 in_vars_minus = select_flow_transport_loss(techs, edges_in)
-                in_vars_minus = in_vars_minus.reshape((-1, in_vars_minus.shape[-1])).T
+                in_vars_minus = in_vars_minus.reshape(
+                    (-1, *in_vars_minus.shape[-2:])
+                ).transpose(1, 2, 0)
                 n_plus = in_vars_plus.shape[-1]
                 n_in = n_plus + in_vars_minus.shape[-1]
-                flow_transport_in_vars[c_pos, n_pos, :, :n_plus] = in_vars_plus
-                flow_transport_in_vars[c_pos, n_pos, :, n_plus:n_in] = in_vars_minus
-                flow_transport_in_coeffs[c_pos, n_pos, :, :n_plus] = 1
-                flow_transport_in_coeffs[c_pos, n_pos, :, n_plus:n_in] = -1
+                flow_transport_in_vars[c_pos, n_pos, ..., :n_plus] = in_vars_plus
+                flow_transport_in_vars[c_pos, n_pos, ..., n_plus:n_in] = in_vars_minus
+                flow_transport_in_coeffs[c_pos, n_pos, ..., :n_plus] = 1
+                flow_transport_in_coeffs[c_pos, n_pos, ..., n_plus:n_in] = -1
 
                 # get the variables for the out flow
                 out_vars_plus = select_flow_transport(techs, edges_out)
-                out_vars_plus = out_vars_plus.reshape((-1, out_vars_plus.shape[-1])).T
+                out_vars_plus = out_vars_plus.reshape(
+                    (-1, *out_vars_plus.shape[-2:])
+                ).transpose(1, 2, 0)
                 n_out = out_vars_plus.shape[-1]
-                flow_transport_out_vars[c_pos, n_pos, :, :n_out] = out_vars_plus
-                flow_transport_out_coeffs[c_pos, n_pos, :, :n_out] = 1
+                flow_transport_out_vars[c_pos, n_pos, ..., :n_out] = out_vars_plus
+                flow_transport_out_coeffs[c_pos, n_pos, ..., :n_out] = 1
 
             # create the linear expression
             def _to_dataarray(data):

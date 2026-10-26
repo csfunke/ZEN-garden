@@ -13,7 +13,8 @@ class FlowConversionInput(GenericVariable):
         "set_conversion_technologies",
         "set_input_carriers",
         "set_nodes",
-        "set_time_steps_operation",
+        "set_years",
+        "set_representative_hours",
     ]
     doc = "Variable for carrier input of conversion technologies"
     unit_category = {"energy_quantity": 1, "time": -1}
@@ -31,16 +32,12 @@ class FlowConversionInput(GenericVariable):
         ]
         lower = xr.DataArray(0.0, coords=coords)
         upper = xr.DataArray(np.inf, coords=coords)
-        technology_set, carrier_set, node_set, timestep_set = [
+        technology_set, carrier_set, node_set, year_set, _ = [
             sets[name] for name in index_names
         ]
 
         for tech in technology_set:
             for carrier in carrier_set[tech]:
-                time_step_year = [
-                    model_constructor.time_steps.convert_time_step_operation2year(t)
-                    for t in timestep_set
-                ]
                 if carrier == sets["set_reference_carriers"][tech][0]:
                     conversion_factor_lower = conversion_factor_upper = 1
                 else:
@@ -64,11 +61,15 @@ class FlowConversionInput(GenericVariable):
 
                 capacity = optimization_model.variables["capacity"]
                 lower.loc[tech, carrier, ...] = (
-                    capacity.lower.loc[tech, "power", node_set, time_step_year].data
+                    capacity.lower.loc[tech, "power", node_set, year_set].data[
+                        ..., None
+                    ]
                     * conversion_factor_lower
                 )
                 upper.loc[tech, carrier, ...] = (
-                    capacity.upper.loc[tech, "power", node_set, time_step_year].data
+                    capacity.upper.loc[tech, "power", node_set, year_set].data[
+                        ..., None
+                    ]
                     * conversion_factor_upper
                 )
         return lower, upper

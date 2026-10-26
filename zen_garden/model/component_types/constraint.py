@@ -50,96 +50,62 @@ class GenericConstraint(ABC):
             optimization_model.masks.log_reduction(name, mask)
         optimization_model.add_constraint(name, constraint, doc=doc, mask=mask)
 
-    # helper methods for constraint rules
-    @staticmethod
-    def get_year_time_step_array(model_constructor: "ModelConstructor", storage=False):
-        """Returns array with year and time steps of each year.
-
-        :param storage: boolean indicating if object is a storage object
-        """
-        time_steps = model_constructor.time_steps
-        # create times xarray with 1 where the operation time step is in the year
-        if storage:
-            meth = time_steps.get_time_steps_year2storage
-            time_step_name = "set_time_steps_storage"
-        else:
-            meth = time_steps.get_time_steps_year2operation
-            time_step_name = "set_time_steps_operation"
-        years = model_constructor.optimization_model.sets["set_years"]
-        year_ts_pairs = [(y, t) for y in years for t in meth(y)]
-        index = pd.MultiIndex.from_tuples(
-            year_ts_pairs, names=["set_years", time_step_name]
-        )
-        times = pd.Series(index=index, data=1).to_xarray()
-        return times.fillna(0.0)
-
-    @staticmethod
-    def get_year_time_step_duration_array(model_constructor: "ModelConstructor"):
-        """Returns array with year and duration of time steps of each year."""
-        times = GenericConstraint.get_year_time_step_array(model_constructor)
-        time_steps_operation_duration = cast(
-            xr.DataArray | None,
-            model_constructor.optimization_model.parameters.time_steps_operation_duration,
-        )
-        assert time_steps_operation_duration is not None
-        times = times * time_steps_operation_duration
-        return times
-
     @staticmethod
     def get_previous_storage_time_step_array(model_constructor: "ModelConstructor"):
-        """Returns array with storage time steps and previous storage time steps."""
+        """Return predecessor year/hour arrays and the valid-coupling mask."""
         optimization_model = model_constructor.optimization_model
         time_steps = model_constructor.time_steps
-        times_prev = []
-        mask_values = []
-        for ts in optimization_model.sets["set_time_steps_storage"]:
-            ts_end = time_steps.get_time_steps_storage_startend(ts)
-            if ts_end is not None:
-                if model_constructor.config.system.storage_periodicity:
-                    times_prev.append(ts_end)
-                    mask_values.append(True)
-                else:
-                    times_prev.append(ts)
-                    mask_values.append(False)
-            else:
-                ts_prev = time_steps.get_previous_storage_time_step(ts)
-                times_prev.append(ts_prev)
-                mask_values.append(True)
-        mask = xr.DataArray(
-            mask_values,
-            dims="set_time_steps_storage",
-            coords={
-                "set_time_steps_storage": optimization_model.sets[
-                    "set_time_steps_storage"
-                ]
-            },
+        previous = time_steps.previous_storage_time_step
+        coupling = time_steps.storage_coupling_mask
+        assert previous is not None
+        assert coupling is not None
+        years = list(optimization_model.sets["set_years"])
+        storage_hours = list(
+            optimization_model.sets[
+                "set_representative_hours_storage"
+            ].coordinate_values
         )
-        return times_prev, mask
+        previous_year = xr.DataArray(
+            [[year for _ in storage_hours] for year in years],
+            coords={
+                "set_years": years,
+                "set_representative_hours_storage": storage_hours,
+            },
+            dims=("set_years", "set_representative_hours_storage"),
+        )
+        previous_hour = xr.DataArray(
+            [storage_hours for _ in years],
+            coords=previous_year.coords,
+            dims=previous_year.dims,
+        )
+        mask = xr.full_like(previous_year, False, dtype=bool)
+        selected_years = set(years)
+        previous_steps = cast(
+            dict[tuple[int, int], tuple[int, int]], previous.to_dict()
+        )
+        coupling_values = cast(dict[tuple[int, int], bool], coupling.to_dict())
+        for pair, predecessor in previous_steps.items():
+            year, storage_hour = pair
+            if year not in selected_years:
+                continue
+            predecessor_year, predecessor_hour = predecessor
+            if predecessor_year not in selected_years:
+                valid_hours = time_steps.representative_hours_storage
+                assert valid_hours is not None
+                predecessor_year = year
+                predecessor_hour = valid_hours[year][-1]
+            previous_year.loc[year, storage_hour] = predecessor_year
+            previous_hour.loc[year, storage_hour] = predecessor_hour
+            mask.loc[year, storage_hour] = coupling_values[pair]
+        return previous_year, previous_hour, mask
 
     @staticmethod
     def get_power2energy_time_step_array(model_constructor: "ModelConstructor"):
-        """Returns array with power2energy time steps."""
-        optimization_model = model_constructor.optimization_model
-        mapping = {
-            st: model_constructor.time_steps.convert_time_step_energy2power(st)
-            for st in optimization_model.sets["set_time_steps_storage"]
-        }
-        times = pd.Series(mapping, name="set_time_steps_operation")
-        times.index.name = "set_time_steps_storage"
-        return times
-
-    @staticmethod
-    def get_storage2year_time_step_array(model_constructor: "ModelConstructor"):
-        """Returns array with storage2year time steps."""
-        optimization_model = model_constructor.optimization_model
-        mapping = {
-            st: y
-            for y in optimization_model.sets["set_years"]
-            for st in model_constructor.time_steps.get_time_steps_year2storage(y)
-        }
-        times = pd.Series(mapping, name="set_years")
-        times.index.name = "set_time_steps_storage"
-        return times
+        """Return the operational representative selected by each storage hour."""
+        mapping = model_constructor.time_steps.storage_to_operation
+        assert mapping is not None
+        years = list(model_constructor.optimization_model.sets["set_years"])
+        return mapping.loc[mapping.index.get_level_values("set_years").isin(years)]
 
     @staticmethod
     def map_and_expand(array, mapping):
@@ -148,16 +114,16 @@ class GenericConstraint(ABC):
         :param array: xarray to map and expand
         :param mapping: pd.Series with mapping values
         """
-        assert isinstance(mapping, pd.Series) or isinstance(
-            mapping.index, pd.Index
-        ), "Mapping must be a pd.Series or with a single-level pd.Index"
-        # get mapping values
-        array = array.sel({mapping.name: mapping.values})
-        # rename
-        array = array.rename({mapping.name: mapping.index.name})
-        # assign coordinates
-        array = array.assign_coords({mapping.index.name: mapping.index})
-        return array
+        if not isinstance(mapping, pd.Series):
+            raise TypeError("Mapping must be a pandas Series")
+        if isinstance(mapping.index, pd.MultiIndex):
+            indexer = mapping.to_xarray()
+            valid = indexer.notnull()
+            safe_indexer = indexer.fillna(0).astype(int)
+            return array.sel({mapping.name: safe_indexer}).where(valid)
+        mapped = array.sel({mapping.name: mapping.values})
+        mapped = mapped.rename({mapping.name: mapping.index.name})
+        return mapped.assign_coords({mapping.index.name: mapping.index})
 
     @staticmethod
     def align_and_mask(expr, mask):

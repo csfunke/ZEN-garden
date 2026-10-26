@@ -20,14 +20,16 @@ class StorageInflowMask(GenericMask):
                 coords={
                     "set_technologies": technologies,
                     "set_location": list(model.sets["set_nodes"]),
-                    "set_time_steps_operation": list(
-                        model.sets["set_time_steps_operation"]
+                    "set_years": list(model.sets["set_years"]),
+                    "set_representative_hours": list(
+                        model.sets["set_representative_hours"]
                     ),
                 },
                 dims=(
                     "set_technologies",
                     "set_location",
-                    "set_time_steps_operation",
+                    "set_years",
+                    "set_representative_hours",
                 ),
             )
         inflow = model.parameters.flow_storage_inflow

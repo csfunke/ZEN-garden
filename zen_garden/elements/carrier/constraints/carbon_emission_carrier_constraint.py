@@ -28,22 +28,12 @@ class CarbonEmissionsCarrierConstraint(GenericConstraint):
         :math:`F^{\\mathrm{exp}}_{c,n,t}`: flow of carrier :math:`c` exported at
         node :math:`n` in time step :math:`t` of year :math:`y`
         """
-        # create times xarray with 1 where the operation time step is in the year
-        times = cls.get_year_time_step_array(model_constructor)
-        # convert the carbon intensity carrier from yearly to operation time steps
-        # TODO map and expand
         carbon_intensity_carrier_import = (
-            model_constructor.optimization_model.parameters.carbon_intensity_carrier_import.broadcast_like(
-                times
-            )
-            * times
-        ).sum("set_years")
+            model_constructor.optimization_model.parameters.carbon_intensity_carrier_import
+        )
         carbon_intensity_carrier_export = (
-            model_constructor.optimization_model.parameters.carbon_intensity_carrier_export.broadcast_like(
-                times
-            )
-            * times
-        ).sum("set_years")
+            model_constructor.optimization_model.parameters.carbon_intensity_carrier_export
+        )
         lhs = model_constructor.optimization_model.variables[
             "carbon_emissions_carrier"
         ] - (

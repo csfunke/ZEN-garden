@@ -1,7 +1,5 @@
 """Operational mask derived from available power capacity."""
 
-import xarray as xr
-
 from zen_garden.elements.technology.masks.capacity_available_mask import (
     CapacityAvailableMask,
 )
@@ -18,13 +16,9 @@ class PowerOperationMask(GenericMask):
     def build(cls, model_constructor, registry):
         capacity = registry[CapacityAvailableMask].sel(set_capacity_types="power")
         capacity = capacity.drop_vars("set_capacity_types", errors="ignore")
-        times = model_constructor.optimization_model.sets["set_time_steps_operation"]
-        years = xr.DataArray(
-            [
-                model_constructor.time_steps.convert_time_step_operation2year(time)
-                for time in times
-            ],
-            coords={"set_time_steps_operation": times},
-            dims="set_time_steps_operation",
+        representative_hours = list(
+            model_constructor.optimization_model.sets["set_representative_hours"]
         )
-        return capacity.sel(set_years=years).drop_vars("set_years", errors="ignore")
+        return capacity.expand_dims(
+            {"set_representative_hours": representative_hours}, axis=-1
+        )

@@ -23,18 +23,16 @@ class CostCarrierTotalConstraint(GenericConstraint):
         :math:`y`
         :math:`\\Delta t_t`: duration of time step :math:`t`
         """
-        times = cls.get_year_time_step_duration_array(model_constructor)
+        weight = (
+            model_constructor.optimization_model.parameters.weight_representative_hours
+        )
         term_summed_cost_carrier = (
             (
-                model_constructor.optimization_model.variables[
-                    "cost_carrier"
-                ].broadcast_like(times)
-                + model_constructor.optimization_model.variables[
-                    "cost_shed_demand"
-                ].broadcast_like(times)
+                model_constructor.optimization_model.variables["cost_carrier"]
+                + model_constructor.optimization_model.variables["cost_shed_demand"]
             )
-            * times
-        ).sum(["set_carriers", "set_nodes", "set_time_steps_operation"])
+            * weight
+        ).sum(["set_carriers", "set_nodes", "set_representative_hours"])
         lhs = (
             model_constructor.optimization_model.variables["cost_carrier_total"]
             - term_summed_cost_carrier

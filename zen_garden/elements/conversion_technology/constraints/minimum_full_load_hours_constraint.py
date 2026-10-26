@@ -80,10 +80,13 @@ class MinimumFullLoadHoursConstraint(GenericConstraint):
                 }
             )
         )
+        weights = (
+            model_constructor.optimization_model.parameters.weight_representative_hours
+        )
         term_annual_production = (
             cls.get_flow_expression_conversion(model_constructor, techs, nodes)
-            * cls.get_year_time_step_duration_array(model_constructor)
-        ).sum("set_time_steps_operation")
+            * weights
+        ).sum("set_representative_hours")
 
         lhs = term_annual_production.where(mask) - term_capacity.where(mask)
         rhs = 0

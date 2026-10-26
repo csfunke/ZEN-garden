@@ -5,7 +5,12 @@ class MaxLoad(GenericParameter):
     """Maximum load relative to installed capacity."""
 
     name = "max_load"
-    indices = ("set_technologies", "set_location", "set_hours")
+    indices = (
+        "set_technologies",
+        "set_location",
+        "set_years",
+        "set_representative_hours",
+    )
     doc = "Maximum load relative to installed capacity"
     unit_category = {}
     time_series = True

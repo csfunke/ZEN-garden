@@ -43,6 +43,8 @@ UNRELATED_INDEXES_FOR_UNITS = set(
         "set_time_steps_yearly",
         "set_years",
         "set_hours",
+        "set_representative_hours",
+        "set_representative_hours_storage",
     ]
 )
 
@@ -241,6 +243,8 @@ class Postprocess:
         for set in self.optimization_model.sets:
             if not set.is_indexed():
                 continue
+            if set.name == "set_representative_hours_storage":
+                continue
 
             data = [",".join([str(t) for t in tpl]) for tpl in set.data.values()]
             indices_list = list(set.data.keys())
@@ -268,31 +272,41 @@ class Postprocess:
             return []
 
         parameters = xr.Dataset()
+        legacy_names = {
+            "weight_representative_hours": "time_steps_operation_duration",
+            "duration_representative_hours_storage": "time_steps_storage_duration",
+        }
         for param in self.optimization_model.parameters.docs.keys():
+            output_name = legacy_names.get(param, param)
             if (
                 self.config.solver.selected_saved_parameters
                 and param not in self.config.solver.selected_saved_parameters
+                and output_name not in self.config.solver.selected_saved_parameters
             ):
                 continue
             # get the values
             vals = getattr(self.optimization_model.parameters, param)
             # data frame
             if isinstance(vals, xr.DataArray):
-                parameters[param] = vals
+                parameters[output_name] = vals
             # we have a scalar
             else:
-                parameters[param] = xr.DataArray(data=[vals], dims=["scalar"])
+                parameters[output_name] = xr.DataArray(data=[vals], dims=["scalar"])
 
+        parameters = self._to_legacy_time_dimensions(parameters)
         self._write_netcdf_file(self.name_dir / "parameters.nc", parameters)
         units = {
-            name: pd.Series(value)
+            legacy_names.get(name, name): pd.Series(value)
             for name, value in self.optimization_model.parameters.units.items()
             if value is not None
         }
         self._write_units_to_file(self.name_dir / "parameters_units.h5", units)
         self._write_json_file(
             self.name_dir / "parameters_docs.json",
-            self.optimization_model.parameters.docs,
+            {
+                legacy_names.get(name, name): self._legacy_time_doc(doc)
+                for name, doc in self.optimization_model.parameters.docs.items()
+            },
         )
 
         return list(parameters.keys())
@@ -302,7 +316,8 @@ class Postprocess:
         post-processed immediately or loaded and postprocessed at some other
         time.
         """
-        self._write_netcdf_file(self.name_dir / "variables.nc", self.lp_model.solution)
+        solution = self._to_legacy_time_dimensions(self.lp_model.solution)
+        self._write_netcdf_file(self.name_dir / "variables.nc", solution)
 
         units = {
             cast(str, name): self.optimization_model.variables.units[cast(str, name)]
@@ -316,9 +331,12 @@ class Postprocess:
         self._write_units_to_file(self.name_dir / "variables_units.h5", units_filtered)
         self._write_json_file(
             self.name_dir / "variables_docs.json",
-            self.optimization_model.variables.docs,
+            {
+                name: self._legacy_time_doc(doc)
+                for name, doc in self.optimization_model.variables.docs.items()
+            },
         )
-        return list(self.lp_model.solution.keys())
+        return list(solution.keys())
 
     def save_duals(self) -> list[Hashable]:
         """Saves the dual variable values to a h5 file."""
@@ -326,11 +344,101 @@ class Postprocess:
             logger.info("Duals are not saved")
             return []
 
-        self._write_netcdf_file(self.name_dir / "duals.nc", self.lp_model.dual)
+        dual = self._to_legacy_time_dimensions(self.lp_model.dual)
+        self._write_netcdf_file(self.name_dir / "duals.nc", dual)
         self._write_json_file(
-            self.name_dir / "duals_docs", self.optimization_model.constraints.docs
+            self.name_dir / "duals_docs",
+            {
+                name: self._legacy_time_doc(doc)
+                for name, doc in self.optimization_model.constraints.docs.items()
+            },
         )
         return list(self.lp_model.dual.keys())
+
+    def _to_legacy_time_dimensions(self, dataset: xr.Dataset) -> xr.Dataset:
+        """Flatten internal year/hour dimensions to the stable result schema."""
+        converted = xr.Dataset()
+        for name, array in dataset.data_vars.items():
+            if {
+                "set_years",
+                "set_representative_hours",
+            }.issubset(array.dims):
+                converted[name] = self._flatten_time_dimension(
+                    array,
+                    representative_dimension="set_representative_hours",
+                    legacy_dimension="set_time_steps_operation",
+                    pair_to_step=self.time_steps.operation_pair_to_step,
+                )
+            elif {
+                "set_years",
+                "set_representative_hours_storage",
+            }.issubset(array.dims):
+                converted[name] = self._flatten_time_dimension(
+                    array,
+                    representative_dimension="set_representative_hours_storage",
+                    legacy_dimension="set_time_steps_storage",
+                    pair_to_step=self.time_steps.storage_pair_to_step,
+                )
+            else:
+                converted[name] = array
+        return converted
+
+    def _flatten_time_dimension(
+        self,
+        array: xr.DataArray,
+        *,
+        representative_dimension: str,
+        legacy_dimension: str,
+        pair_to_step: dict[tuple[int, int], int] | None,
+    ) -> xr.DataArray:
+        """Flatten one explicit year/representative-hour pair."""
+        assert pair_to_step is not None
+        target_dims = list(array.dims)
+        year_position = target_dims.index("set_years")
+        target_dims.remove("set_years")
+        target_dims.remove(representative_dimension)
+        target_dims.insert(year_position, legacy_dimension)
+        pieces = []
+        for year in array.coords["set_years"].values:
+            pairs = [
+                pair
+                for pair in pair_to_step
+                if pair[0] == int(year)
+                and pair[1] in array.coords[representative_dimension]
+            ]
+            if not pairs:
+                continue
+            hours = [pair[1] for pair in pairs]
+            steps = [pair_to_step[pair] for pair in pairs]
+            piece = array.sel(
+                {"set_years": year, representative_dimension: hours}
+            ).drop_vars("set_years", errors="ignore")
+            piece = piece.assign_coords({representative_dimension: steps}).rename(
+                {representative_dimension: legacy_dimension}
+            )
+            pieces.append(piece)
+        if not pieces:
+            return array
+        return xr.concat(pieces, dim=legacy_dimension).transpose(*target_dims)
+
+    @staticmethod
+    def _legacy_time_doc(doc: str) -> str:
+        """Translate internal time names in persisted component documentation."""
+        return (
+            doc.replace(
+                "set_years, set_representative_hours_storage",
+                "set_time_steps_storage",
+            )
+            .replace(
+                "set_years, set_representative_hours",
+                "set_time_steps_operation",
+            )
+            .replace("weight_representative_hours", "time_steps_operation_duration")
+            .replace(
+                "duration_representative_hours_storage",
+                "time_steps_storage_duration",
+            )
+        )
 
     def save_reduced_costs(self) -> list[Hashable]:
         """Saves the reduced cost values of variables to a h5 file."""
@@ -364,6 +472,7 @@ class Postprocess:
 
             reduced_costs[name] = arr
 
+        reduced_costs = self._to_legacy_time_dimensions(reduced_costs)
         self._write_netcdf_file(self.name_dir / "reduced_costs.nc", reduced_costs)
         return list(reduced_costs.keys())
 

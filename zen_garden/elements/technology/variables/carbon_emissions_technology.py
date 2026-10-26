@@ -6,7 +6,12 @@ class CarbonEmissionsTechnology(GenericVariable):
     """Variable for carbon emissions from technology operation."""
 
     name = "carbon_emissions_technology"
-    indices = ["set_technologies", "set_location", "set_time_steps_operation"]
+    indices = [
+        "set_technologies",
+        "set_location",
+        "set_years",
+        "set_representative_hours",
+    ]
     doc = (
         "Variable for carbon emissions for operating technology at location l and "
         "time t"

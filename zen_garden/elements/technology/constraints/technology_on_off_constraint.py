@@ -1,6 +1,5 @@
 import linopy as lp
 import numpy as np
-import xarray as xr
 from linopy.expressions import LinearExpression
 
 from zen_garden.model.component_types.constraint import GenericConstraint
@@ -62,15 +61,6 @@ class TechnologyOnOffConstraint(GenericConstraint):
             "set_transport_technologies"
         ]
         nodes = model_constructor.optimization_model.sets["set_nodes"]
-        times = model_constructor.optimization_model.sets["set_time_steps_operation"]
-        time_step_year = xr.DataArray(
-            [
-                model_constructor.time_steps.convert_time_step_operation2year(t)
-                for t in times.data
-            ],
-            coords=[times],
-            dims=["set_time_steps_operation"],
-        )
         if len(techs_on_off) == 0:
             # No technology needs on/off modelling: drop the helper variables
             # that were only added for this constraint.
@@ -86,7 +76,7 @@ class TechnologyOnOffConstraint(GenericConstraint):
         # params and variables
         min_load = model_constructor.optimization_model.parameters.min_load
         capacity = model_constructor.optimization_model.variables["capacity"].sel(
-            {"set_capacity_types": "power", "set_years": time_step_year}
+            {"set_capacity_types": "power"}
         )
         big_M = capacity.upper
         binary = model_constructor.optimization_model.variables["tech_on_var"]

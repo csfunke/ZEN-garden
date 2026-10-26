@@ -11,7 +11,8 @@ class FlowConversionOutput(FlowConversionInput):
         "set_conversion_technologies",
         "set_output_carriers",
         "set_nodes",
-        "set_time_steps_operation",
+        "set_years",
+        "set_representative_hours",
     ]
     doc = "Variable for carrier output of conversion technologies"
     unit_category = {"energy_quantity": 1, "time": -1}

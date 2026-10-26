@@ -115,7 +115,8 @@ both sides of the equation. For example, let's say we want to limit the
 
     variables["shed_demand"]:
 
-    Variable (set_carriers: 2, set_nodes: 2, set_time_steps_operation: 2)
+    Variable (set_carriers: 2, set_nodes: 2, set_years: 1,
+              set_representative_hours: 2)
     ---------------------------------------------------------------------
     [heat, CH, 0]: shed_demand[heat, CH, 0] ∈ [0, inf]
     [heat, CH, 1]: shed_demand[heat, CH, 1] ∈ [0, inf]
@@ -128,7 +129,8 @@ both sides of the equation. For example, let's say we want to limit the
 
     parameters.demand:
 
-    <xarray.DataArray (set_carriers: 2, set_nodes: 2, set_time_steps_operation: 2)> Size: 64B
+    <xarray.DataArray (set_carriers: 2, set_nodes: 2, set_years: 1,
+                      set_representative_hours: 2)> Size: 64B
     array([[[ 10.,  10.],
             [100., 100.]],
            [[  0.,   0.],
@@ -136,11 +138,12 @@ both sides of the equation. For example, let's say we want to limit the
     Coordinates:
       * set_carriers              (set_carriers) <U11 88B 'heat' 'natural_gas'
       * set_nodes                 (set_nodes) <U2 16B 'CH' 'DE'
-      * set_time_steps_operation  (set_time_steps_operation) int64 16B 0 1
+      * set_years                 (set_years) int64 8B 0
+      * set_representative_hours  (set_representative_hours) int64 16B 0 1
 
 We can see that the ``shed_demand`` and the ``demand`` have the same
 dimensionality, as they are defined for 2 carriers ('heat' and 'natural_gas')
-in 2 nodes ('CH' and 'DE') for 2 time steps (0 and 1).
+in 2 nodes ('CH' and 'DE'), one year, and 2 representative hours (0 and 1).
 
 We can now write the constraint as follows:
 
@@ -199,7 +202,7 @@ An important concept in ``xarray`` is broadcasting.
 Briefly said, broadcasting is the process of making arrays with different shapes
 compatible for arithmetic operations. Much broadcasting is done implicitly: in
 the example above, the ``price_shed_demand`` has only one dimension,
-``set_carriers``, while the ``shed_demand`` has three dimensions:
+``set_carriers``, while the ``shed_demand`` has four dimensions:
 
 .. code-block::
 
@@ -214,30 +217,31 @@ Therefore, the ``mask`` also has only one dimension.
 When we use the ``where`` method, the ``mask`` is automatically broadcasted to
 the shape of the ``shed_demand``.
 
-Sometimes, we have to help linopy a bit to broadcast. This is especially the
-case when none of the dimensions overlap. We can expand the dimensionality of,
-e.g., a variable by the dimensions of a parameter by using ``broadcast_like``.
-Let's take the example from
+The explicit year and representative-hour dimensions make annual constraints
+direct. Let's take the example from
 :py:meth:`CostCarrierTotalConstraint.build <zen_garden.elements.carrier.constraints.cost_carrier_total_constraint.CostCarrierTotalConstraint.build>`:
-We want to multiply the hourly carrier cost with the duration of the time step
-and sum over all time steps of the year. ``get_year_time_step_duration_array``
-is one of the helper methods that
-:py:class:`GenericConstraint <zen_garden.model.component_types.constraint.GenericConstraint>`
-provides to every constraint class; call it as ``cls.<helper_name>(...)`` from
-within ``build``.
+We multiply hourly carrier cost by the year-specific representative-hour
+weight and sum over all representative hours of the year. ``xarray`` and
+Linopy align the shared ``set_years`` and ``set_representative_hours``
+dimensions automatically.
 
 .. code-block:: python
 
-    times = cls.get_year_time_step_duration_array(model_constructor)
-    term_expanded_cost_carrier = model_constructor.optimization_model.variables[
-        "cost_carrier"
-    ].broadcast_like(times)
+    weight = (
+        model_constructor.optimization_model.parameters
+        .weight_representative_hours
+    )
+    weighted_cost = (
+        model_constructor.optimization_model.variables["cost_carrier"]
+        * weight
+    )
 
 .. code-block::
 
     variables["cost_carrier"]:
 
-    Variable (set_carriers: 2, set_nodes: 2, set_time_steps_operation: 2)
+    Variable (set_carriers: 2, set_nodes: 2, set_years: 1,
+              set_representative_hours: 2)
     ---------------------------------------------------------------------
     [heat, CH, 0]: cost_carrier[heat, CH, 0] ∈ [-inf, inf]
     [heat, CH, 1]: cost_carrier[heat, CH, 1] ∈ [-inf, inf]
@@ -248,27 +252,29 @@ within ``build``.
     [natural_gas, DE, 0]: cost_carrier[natural_gas, DE, 0] ∈ [-inf, inf]
     [natural_gas, DE, 1]: cost_carrier[natural_gas, DE, 1] ∈ [-inf, inf]
 
-    times:
+    weight:
 
-    <xarray.DataArray (set_years: 1, set_time_steps_operation: 2)> Size: 16B
+    <xarray.DataArray (set_years: 1, set_representative_hours: 2)> Size: 16B
     array([[1., 1.]])
     Coordinates:
       * set_years     (set_years) int64 8B 0
-      * set_time_steps_operation  (set_time_steps_operation) int32 8B 0 1
+      * set_representative_hours  (set_representative_hours) int32 8B 0 1
 
-The resulting ``term_expanded_cost_carrier`` has the shape
-``(set_years: 1, set_time_steps_operation: 2, set_carriers: 2, set_nodes: 2)``.
+The resulting ``weighted_cost`` has the dimensions ``set_carriers``,
+``set_nodes``, ``set_years``, and ``set_representative_hours``.
 
 
 Summing over dimensions
 -----------------------
 
-With the expanded variable, we can now sum over the time steps of the year, the
-nodes, and the carriers:
+We can now sum over the representative hours, nodes, and carriers while
+retaining the explicit year dimension:
 
 .. code-block:: python
 
-    term_summed_cost_carrier = term_expanded_cost_carrier.sum(["set_carriers", "set_nodes", "set_time_steps_operation"])
+    term_summed_cost_carrier = weighted_cost.sum(
+        ["set_carriers", "set_nodes", "set_representative_hours"]
+    )
 
 The resulting ``term_summed_cost_carrier`` has the shape
 ``(set_years: 1)``. Broadcasting and summing over dimensions is a
@@ -308,48 +314,23 @@ dimension.
 
 Map and expand
 --------------
-ZEN-garden has an implemented function that broadcasts, selects, and renames
-variables and parameters in one go. It is called ``map_and_expand``, and, like
-``get_year_time_step_duration_array``, it is one of the helper methods on
+ZEN-garden has an implemented function that selects and replaces a time
+dimension in one operation. It is called ``map_and_expand`` and is a helper on
 :py:class:`GenericConstraint <zen_garden.model.component_types.constraint.GenericConstraint>`,
-called as ``cls.map_and_expand(...)``. For example, in the previous example, we
-want to restructure ``capacity`` to fit the ``set_time_steps_storage`` so that
-we can use it as a constraint for the ``storage_level``:
+called as ``cls.map_and_expand(...)``. Storage-state equations use it to select
+the operational hour corresponding to each year-specific storage hour:
 
 .. code-block:: python
 
-    times = cls.get_storage2year_time_step_array(model_constructor)
-    capacity = cls.map_and_expand(
-        model_constructor.optimization_model.variables["capacity"], times
+    times_power2energy = cls.get_power2energy_time_step_array(model_constructor)
+    storage_flow = cls.map_and_expand(
+        operational_storage_flow, times_power2energy
     )
 
-.. code-block::
-
-    variables["capacity"]
-
-    Variable (set_time_steps_storage: 2,
-        set_technologies: 3,
-        set_capacity_types: 2,
-        set_location: 4,
-        set_years: 1) - 32 masked entries
-
-    times
-
-    set_time_steps_storage
-    0    0
-    1    0
-    Name: set_years, dtype: int64
-
-    Output
-
-    Variable (set_technologies: 3,
-        set_capacity_types: 2,
-        set_location: 4,
-        set_time_steps_storage: 2) - 32 masked entries
-
-Note that the ``mapper`` (in this case ``times``) must be a ``pd.Series``, whose
-name is the dimension we want to replace and whose index name is the target
-dimension.
+The mapper is a ``pd.Series`` with a ``(set_years,
+set_representative_hours_storage)`` MultiIndex. Its values are members of
+``set_representative_hours``. The year dimension is therefore preserved while
+only the within-year time dimension is mapped.
 
 
 Align and mask

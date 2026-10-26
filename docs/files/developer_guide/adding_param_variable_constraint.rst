@@ -108,19 +108,29 @@ and declares:
 - ``time_series``: set to ``True`` if the parameter is hourly resolved, so it is
   routed through time series aggregation instead of being read as a plain value.
 
-For a parameter that is read directly from the input data, this is the entire
-class:
+For an hourly parameter that is read directly from the input data, this is the
+entire class:
 
 .. code-block:: python
 
-    # zen_garden/elements/carrier/parameters/availability_import_yearly.py
-    class AvailabilityImportYearly(GenericParameter):
-        """Parameter which specifies the yearly availability of carrier import."""
+    # zen_garden/elements/carrier/parameters/demand.py
+    class Demand(GenericParameter):
+        """Parameter which specifies the carrier demand."""
 
-        name = "availability_import_yearly"
-        indices = ("set_carriers", "set_nodes", "set_years")
-        doc = "Parameter which specifies the yearly availability of carrier import"
-        unit_category = {"energy_quantity": 1}
+        name = "demand"
+        indices = (
+            "set_carriers",
+            "set_nodes",
+            "set_years",
+            "set_representative_hours",
+        )
+        doc = "Parameter which specifies the carrier demand"
+        unit_category = {"energy_quantity": 1, "time": -1}
+        time_series = True
+
+Hourly input files remain indexed by ``set_hours``. For a ``time_series``
+parameter, preprocessing converts that input index into the separate
+``set_years`` and ``set_representative_hours`` model indices declared above.
 
 The class is added to the element's parameter list, e.g.
 :py:data:`CARRIER_PARAMETERS <zen_garden.elements.carrier.parameters.CARRIER_PARAMETERS>`
@@ -216,7 +226,12 @@ and declares:
         """Variable for import flow."""
 
         name = "flow_import"
-        indices = ["set_carriers", "set_nodes", "set_time_steps_operation"]
+        indices = [
+            "set_carriers",
+            "set_nodes",
+            "set_years",
+            "set_representative_hours",
+        ]
         doc = "Variable for node- and time-dependent carrier import from the grid"
         unit_category = {"energy_quantity": 1, "time": -1}
 
@@ -263,18 +278,33 @@ select a branch of an equation. Create reusable masks by subclassing
 
 .. code-block:: python
 
-    class AvailableAssetMask(GenericMask):
-        name = "available_asset"
-        dependencies = [ExistingAssetMask, PotentialAssetMask]
+    class PowerOperationMask(GenericMask):
+        name = "power_operation"
+        dependencies = [CapacityAvailableMask]
 
         @classmethod
         def build(cls, model_constructor, registry):
-            return registry[ExistingAssetMask] | registry[PotentialAssetMask]
+            capacity = registry[CapacityAvailableMask].sel(
+                set_capacity_types="power"
+            )
+            capacity = capacity.drop_vars(
+                "set_capacity_types", errors="ignore"
+            )
+            representative_hours = list(
+                model_constructor.optimization_model.sets[
+                    "set_representative_hours"
+                ]
+            )
+            return capacity.expand_dims(
+                {"set_representative_hours": representative_hours}, axis=-1
+            )
 
-Dependencies are constructed in topological order after all parameters and
-before variables. Cycles and duplicate names raise errors. A list assigned to a
-variable or constraint is always combined with AND; implement intentional OR
-logic inside a named composite mask as above. Masks may depend on sets,
+This mask keeps the existing yearly capacity dimension and expands it over the
+common within-year operational hours. Dependencies are constructed in
+topological order after all parameters and before variables. Cycles and
+duplicate names raise errors. A list assigned to a variable or constraint is
+always combined with AND; implement intentional OR logic inside a named
+composite mask. Masks may depend on sets,
 parameters, configuration, time mappings, and other masks, but not on variables
 or constraints.
 

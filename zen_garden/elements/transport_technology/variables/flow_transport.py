@@ -1,5 +1,4 @@
 import numpy as np
-import xarray as xr
 
 from zen_garden.elements.technology.masks import PowerOperationMask
 from zen_garden.elements.transport_technology.masks import FiniteTransportRouteMask
@@ -10,7 +9,12 @@ class FlowTransport(GenericVariable):
     """Variable for carrier flow through transport technology."""
 
     name = "flow_transport"
-    indices = ["set_transport_technologies", "set_edges", "set_time_steps_operation"]
+    indices = [
+        "set_transport_technologies",
+        "set_edges",
+        "set_years",
+        "set_representative_hours",
+    ]
     doc = "Variable for carrier flow through transport technology on edge i and time t"
     unit_category = {"energy_quantity": 1, "time": -1}
     masks = [PowerOperationMask, FiniteTransportRouteMask]
@@ -18,18 +22,12 @@ class FlowTransport(GenericVariable):
     @classmethod
     def get_bounds(cls, model_constructor, index_sets):
         index_values, index_names = index_sets
-        tech_arr, edge_arr, time_arr = (
+        tech_arr, edge_arr, year_arr, _ = (
             model_constructor.optimization_model.sets.tuple_to_arr(
                 index_values, index_names
             )
         )
-        time_step_year = xr.DataArray(
-            [
-                model_constructor.time_steps.convert_time_step_operation2year(time)
-                for time in time_arr.data
-            ]
-        )
         capacity = model_constructor.optimization_model.variables["capacity"]
-        lower = capacity.lower.loc[tech_arr, "power", edge_arr, time_step_year].data
-        upper = capacity.upper.loc[tech_arr, "power", edge_arr, time_step_year].data
+        lower = capacity.lower.loc[tech_arr, "power", edge_arr, year_arr].data
+        upper = capacity.upper.loc[tech_arr, "power", edge_arr, year_arr].data
         return np.stack([lower, upper], axis=-1)

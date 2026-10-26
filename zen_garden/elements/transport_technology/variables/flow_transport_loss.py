@@ -9,7 +9,12 @@ class FlowTransportLoss(GenericVariable):
     """Variable for carrier flow loss through transport technology."""
 
     name = "flow_transport_loss"
-    indices = ["set_transport_technologies", "set_edges", "set_time_steps_operation"]
+    indices = [
+        "set_transport_technologies",
+        "set_edges",
+        "set_years",
+        "set_representative_hours",
+    ]
     doc = (
         "Variable for carrier flow lost due to resistances etc. by transporting "
         "carrier through transport technology on edge i and time t"

@@ -46,10 +46,7 @@ class ChargeDischargeBinaryConstraint(GenericConstraint):
         nodes = model_constructor.optimization_model.sets["set_nodes"]
         if len(techs) == 0:
             return
-        # capacity limit as upper bound
-        times = cls.get_storage2year_time_step_array(model_constructor)
         capacity_limit = model_constructor.optimization_model.parameters.capacity_limit
-        capacity_limit = cls.map_and_expand(capacity_limit, times)
         capacity_limit = capacity_limit.rename(
             {
                 "set_technologies": "set_storage_technologies",
@@ -63,10 +60,6 @@ class ChargeDischargeBinaryConstraint(GenericConstraint):
                 "set_capacity_types": "power",
             }
         )
-        capacity_limit = capacity_limit.rename(
-            {"set_time_steps_storage": "set_time_steps_operation"}
-        )
-
         lhs = (
             model_constructor.optimization_model.variables["flow_storage_charge"]
             - model_constructor.optimization_model.variables["charge_storage_binary"]

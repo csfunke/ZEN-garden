@@ -15,7 +15,8 @@ class OnOffTechnologyMask(GenericMask):
                 "set_technologies",
                 "set_on_off",
                 "set_location",
-                "set_time_steps_operation",
+                "set_years",
+                "set_representative_hours",
             ]
         )
         index_names.pop(1)

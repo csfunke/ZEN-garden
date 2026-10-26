@@ -21,10 +21,13 @@ class CarbonEmissionsCarrierTotalConstraint(GenericConstraint):
         of year :math:`y`
         :math:`\\Delta t_t`: duration of time step :math:`t`
         """
+        weights = (
+            model_constructor.optimization_model.parameters.weight_representative_hours
+        )
         term_summed_carbon_emissions_carrier = (
             model_constructor.optimization_model.variables["carbon_emissions_carrier"]
-            * cls.get_year_time_step_duration_array(model_constructor)
-        ).sum(["set_carriers", "set_nodes", "set_time_steps_operation"])
+            * weights
+        ).sum(["set_carriers", "set_nodes", "set_representative_hours"])
         lhs = (
             model_constructor.optimization_model.variables[
                 "carbon_emissions_carrier_total"

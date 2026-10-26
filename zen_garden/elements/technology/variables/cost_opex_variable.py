@@ -8,7 +8,12 @@ class CostOpexVariable(GenericVariable):
     """Variable for operational expenditure."""
 
     name = "cost_opex_variable"
-    indices = ["set_technologies", "set_location", "set_time_steps_operation"]
+    indices = [
+        "set_technologies",
+        "set_location",
+        "set_years",
+        "set_representative_hours",
+    ]
     doc = "Variable for opex for operating technology at location l and time t"
     unit_category = {"money": 1, "time": -1}
     masks = [PowerOperationMask]

@@ -61,45 +61,36 @@ class CoupleStorageLevelConstraint(GenericConstraint):
         flow_storage_spillage = (
             model_constructor.optimization_model.lp_model.variables.flow_storage_spillage
         )
-        time_steps_storage_duration = (
-            model_constructor.optimization_model.parameters.time_steps_storage_duration
+        storage_duration = (
+            model_constructor.optimization_model.parameters.duration_representative_hours_storage
         )
         # reformulate self discharge multiplier as partial geometric series
-        multiplier_w_discharge = (
-            1 - (1 - self_discharge) ** time_steps_storage_duration
-        ) / (1 - (1 - self_discharge))
-        multiplier_wo_discharge = time_steps_storage_duration
+        multiplier_w_discharge = (1 - (1 - self_discharge) ** storage_duration) / (
+            1 - (1 - self_discharge)
+        )
+        multiplier_wo_discharge = storage_duration
         multiplier = multiplier_w_discharge.where(
             self_discharge != 0, 0.0
         ) + multiplier_wo_discharge.where(self_discharge == 0, 0.0)
         # time coupling to previous time step
-        times_coupling, mask_coupling = cls.get_previous_storage_time_step_array(
-            model_constructor
+        previous_year, previous_hour, mask_coupling = (
+            cls.get_previous_storage_time_step_array(model_constructor)
         )
-        self_discharge_previous = (1 - self_discharge) ** time_steps_storage_duration
-        self_discharge_previous["set_time_steps_storage"] = times_coupling
-        term_delta_storage_level = model_constructor.optimization_model.variables[
-            "storage_level"
-        ] - self_discharge_previous * model_constructor.optimization_model.variables[
-            "storage_level"
-        ].sel(
-            {"set_time_steps_storage": times_coupling}
+        self_discharge_previous = (1 - self_discharge) ** storage_duration
+        storage_level = model_constructor.optimization_model.variables["storage_level"]
+        previous_storage_level = storage_level.sel(
+            set_years=previous_year,
+            set_representative_hours_storage=previous_hour,
+        )
+        term_delta_storage_level = (
+            storage_level - self_discharge_previous * previous_storage_level
         )
         # charge and discharge flow
-        times_year_time_step = cls.get_year_time_step_array(model_constructor)
         efficiency_charge = (
-            model_constructor.optimization_model.parameters.efficiency_charge.broadcast_like(
-                times_year_time_step
-            )
-            .where(times_year_time_step, 0.0)
-            .sum("set_years")
+            model_constructor.optimization_model.parameters.efficiency_charge
         )
         efficiency_discharge = (
-            model_constructor.optimization_model.parameters.efficiency_discharge.broadcast_like(
-                times_year_time_step
-            )
-            .where(times_year_time_step, 0.0)
-            .sum("set_years")
+            model_constructor.optimization_model.parameters.efficiency_discharge
         )
         term_flow_charge_discharge = (
             model_constructor.optimization_model.variables["flow_storage_charge"]

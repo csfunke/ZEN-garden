@@ -1,5 +1,3 @@
-import xarray as xr
-
 from zen_garden.elements.technology.masks import PowerOperationMask
 from zen_garden.elements.transport_technology.masks import FiniteTransportRouteMask
 from zen_garden.model.component_types.constraint import GenericConstraint
@@ -38,22 +36,12 @@ class CapacityFactorTransportConstraint(GenericConstraint):
         if len(techs) == 0:
             return
         edges = model_constructor.optimization_model.sets["set_edges"]
-        times = model_constructor.optimization_model.variables["flow_transport"].coords[
-            "set_time_steps_operation"
-        ]
-        time_step_year = xr.DataArray(
-            [
-                model_constructor.time_steps.convert_time_step_operation2year(t)
-                for t in times.data
-            ],
-            coords=[times],
-        )
         term_capacity = (
             model_constructor.optimization_model.parameters.max_load.loc[
-                techs, edges, :
+                techs, edges, :, :
             ]
             * model_constructor.optimization_model.variables["capacity"].loc[
-                techs, "power", edges, time_step_year
+                techs, "power", edges, :
             ]
         ).rename(
             {
@@ -65,7 +53,7 @@ class CapacityFactorTransportConstraint(GenericConstraint):
         lhs = (
             term_capacity
             - model_constructor.optimization_model.variables["flow_transport"].loc[
-                techs, edges, :
+                techs, edges, :, :
             ]
         )
         rhs = 0

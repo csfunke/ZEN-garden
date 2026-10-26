@@ -6,7 +6,12 @@ class ChargeStorageBinary(GenericVariable):
     """Variable for charge storage binary."""
 
     name = "charge_storage_binary"
-    indices = ["set_storage_technologies", "set_nodes", "set_time_steps_operation"]
+    indices = [
+        "set_storage_technologies",
+        "set_nodes",
+        "set_years",
+        "set_representative_hours",
+    ]
     doc = "Binary variable for charge binary for storage technology"
     unit_category = {}
     binary = True

@@ -1,5 +1,3 @@
-import pandas as pd
-
 from zen_garden.elements.technology.masks import CapacityAnyTypeMask
 from zen_garden.model.component_types.constraint import GenericConstraint
 
@@ -37,20 +35,10 @@ class CostOpexYearlyConstraint(GenericConstraint):
         :math:`p` in year :math:`y`
         """
         optimization_model = model_constructor.optimization_model
-        times_dict: dict[str, pd.Series] = {
-            y: optimization_model.parameters.time_steps_operation_duration.loc[
-                model_constructor.time_steps.get_time_steps_year2operation(y)
-            ].to_series()
-            for y in optimization_model.sets["set_years"]
-        }
-        times = pd.concat(times_dict, keys=times_dict.keys())
-        times.index.names = ["set_years", "set_time_steps_operation"]
-        times = times.to_xarray().broadcast_like(
-            optimization_model.variables["cost_opex_variable"].mask
-        )
         term_opex_variable = (
-            optimization_model.variables["cost_opex_variable"] * times
-        ).sum("set_time_steps_operation")
+            optimization_model.variables["cost_opex_variable"]
+            * optimization_model.parameters.weight_representative_hours
+        ).sum("set_representative_hours")
         term_opex_fixed = (
             optimization_model.parameters.opex_specific_fixed
             * optimization_model.variables["capacity"]

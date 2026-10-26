@@ -9,7 +9,12 @@ class TechOnVar(GenericVariable):
     """Variable for technology on/off binary."""
 
     name = "tech_on_var"
-    indices = ["set_technologies", "set_location", "set_time_steps_operation"]
+    indices = [
+        "set_technologies",
+        "set_location",
+        "set_years",
+        "set_representative_hours",
+    ]
     doc = (
         "Binary variable indicating when technology is switched on at location l and "
         "time t"

@@ -3,7 +3,7 @@
 import itertools
 import logging
 import uuid
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
 from typing import TYPE_CHECKING, Any
 
 import numpy as np
@@ -269,6 +269,9 @@ class SetRegistry(Registry):
         """
         list_index = list(list_index)  # make a copy of the list to avoid side effects
 
+        if all(index in self.sets for index in list_index):
+            return self._create_registered_set_product(list_index), list_index
+
         # Case 1: all index sets are already defined in model and no set is indexed
         if all(
             index in self.sets and not self.is_indexed(index) for index in list_index
@@ -328,6 +331,41 @@ class SetRegistry(Registry):
                 else:
                     custom_set.extend([element])
         return custom_set, list_index
+
+    def _create_registered_set_product(self, index_names: list[str]) -> list[Any]:
+        """Create tuples while respecting dependencies between registered sets.
+
+        An indexed set may depend on any set declared earlier in ``index_names``.
+        This supports combinations such as technologies, years, and storage hours
+        whose valid members differ by year.
+        """
+        rows: list[tuple[tuple[Any, ...], dict[str, Any]]] = [((), {})]
+        for index_name in index_names:
+            model_set = self.sets[index_name]
+            expanded: list[tuple[tuple[Any, ...], dict[str, Any]]] = []
+            for values, resolved in rows:
+                members: Iterable[Any]
+                if isinstance(model_set, IndexedSet):
+                    parent_name = model_set.index_set
+                    if parent_name not in resolved:
+                        raise ValueError(
+                            f"Indexed set {index_name!r} depends on {parent_name!r}, "
+                            "which must occur earlier in the component indices."
+                        )
+                    members = model_set[resolved[parent_name]]
+                else:
+                    members = model_set
+                for member in members:
+                    expanded.append(
+                        (
+                            (*values, member),
+                            {**resolved, index_name: member},
+                        )
+                    )
+            rows = expanded
+        if len(index_names) == 1:
+            return [values[0] for values, _ in rows]
+        return [values for values, _ in rows]
 
     def _handle_existing_set(self, index: str, element: str, list_sets: list[Any]):
         """Handles existing sets in the model.

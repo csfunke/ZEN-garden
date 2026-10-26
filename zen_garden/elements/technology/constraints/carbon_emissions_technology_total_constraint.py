@@ -22,12 +22,15 @@ class CarbonEmissionsTechnologyTotalConstraint(GenericConstraint):
         :math:`h` at location :math:`p` in time step :math:`t` of year :math:`y`
         :math:`\\Delta t_t`: duration of time step :math:`t`
         """
+        weights = (
+            model_constructor.optimization_model.parameters.weight_representative_hours
+        )
         term_summed_carbon_emissions_technology = (
             model_constructor.optimization_model.variables[
                 "carbon_emissions_technology"
             ]
-            * cls.get_year_time_step_duration_array(model_constructor)
-        ).sum(["set_technologies", "set_location", "set_time_steps_operation"])
+            * weights
+        ).sum(["set_technologies", "set_location", "set_representative_hours"])
         lhs = (
             model_constructor.optimization_model.variables[
                 "carbon_emissions_technology_total"

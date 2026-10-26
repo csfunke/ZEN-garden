@@ -36,6 +36,7 @@ class GenericParameter(ABC):
     default_value: ClassVar[int | float | str | None] = None
     default_unit: ClassVar[str | None] = None
     dependencies: ClassVar[list[str]] = []
+    squeeze_singleton: ClassVar[bool] = True
 
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
@@ -67,10 +68,7 @@ class GenericParameter(ABC):
         :meth:`store_input_data`. Derived parameters override this to compute
         their data from other, already-registered model parameters.
         """
-        index_names = [
-            "set_time_steps_operation" if index == "set_hours" else index
-            for index in cls.indices
-        ]
+        index_names = list(cls.indices)
         component_data, index_list, units = cls.get_model_data(
             model_constructor, index_names
         )
@@ -95,7 +93,7 @@ class GenericParameter(ABC):
                     model_constructor.optimization_model.sets[cls.set_time_steps]
                 ]
             else:
-                if not isinstance(component_data, float):
+                if cls.squeeze_singleton and not isinstance(component_data, float):
                     component_data = component_data.squeeze()
             units = model_constructor.energy_system.units.get(cls.name, {})
             return component_data, index_list, units
@@ -214,10 +212,15 @@ class GenericParameter(ABC):
         location_type = getattr(element, "location_type", None)
         if "set_location" in indices and location_type is None:
             raise ValueError(f"Element {element.name!r} has no location type")
-        return [
+        indices = [
             str(location_type) if index == "set_location" else index
             for index in indices
         ]
+        if "set_representative_hours" in indices:
+            indices.remove("set_representative_hours")
+            indices.remove("set_years")
+            indices.append("set_hours")
+        return indices
 
     @staticmethod
     def _has_energy_capacity(element: Any) -> bool:

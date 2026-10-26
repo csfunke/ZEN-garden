@@ -41,9 +41,9 @@ class AvailabilityImportExportYearlyConstraint(GenericConstraint):
         lhs_imp = (
             (
                 optimization_model.variables["flow_import"]
-                * cls.get_year_time_step_duration_array(model_constructor)
+                * optimization_model.parameters.weight_representative_hours
             )
-            .sum("set_time_steps_operation")
+            .sum("set_representative_hours")
             .where(mask_imp)
         )
         rhs_imp = optimization_model.parameters.availability_import_yearly.where(
@@ -55,9 +55,9 @@ class AvailabilityImportExportYearlyConstraint(GenericConstraint):
         lhs_exp = (
             (
                 optimization_model.variables["flow_export"]
-                * cls.get_year_time_step_duration_array(model_constructor)
+                * optimization_model.parameters.weight_representative_hours
             )
-            .sum("set_time_steps_operation")
+            .sum("set_representative_hours")
             .where(mask_exp)
         )
         rhs_exp = optimization_model.parameters.availability_export_yearly.where(

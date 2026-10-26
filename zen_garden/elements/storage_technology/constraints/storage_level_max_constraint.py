@@ -27,26 +27,21 @@ class StorageLevelMaxConstraint(GenericConstraint):
         nodes = model_constructor.optimization_model.sets["set_nodes"]
         if len(techs) == 0:
             return
-        # mask for energy capacity and storage time steps
-        times = cls.get_storage2year_time_step_array(model_constructor)
-        capacity = cls.map_and_expand(
-            model_constructor.optimization_model.variables["capacity"], times
-        )
-        capacity = capacity.rename(
+        capacity = model_constructor.optimization_model.variables["capacity"].rename(
             {
                 "set_technologies": "set_storage_technologies",
                 "set_location": "set_nodes",
             }
         )
-        capacity = capacity.sel({"set_nodes": nodes, "set_storage_technologies": techs})
-        storage_level = model_constructor.optimization_model.variables["storage_level"]
-        mask_capacity_type = (
-            model_constructor.optimization_model.variables["capacity"].coords[
-                "set_capacity_types"
-            ]
-            == "energy"
+        capacity = capacity.sel(
+            {
+                "set_nodes": nodes,
+                "set_storage_technologies": techs,
+                "set_capacity_types": "energy",
+            }
         )
-        lhs = (storage_level - capacity).where(mask_capacity_type, 0.0)
+        storage_level = model_constructor.optimization_model.variables["storage_level"]
+        lhs = storage_level - capacity
         rhs = 0
         constraints = lhs <= rhs
 

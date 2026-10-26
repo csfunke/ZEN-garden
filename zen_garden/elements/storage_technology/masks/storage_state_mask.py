@@ -1,7 +1,5 @@
 """Mask for storage state variables and constraints."""
 
-import xarray as xr
-
 from zen_garden.elements.storage_technology.masks.storage_inflow_mask import (
     StorageInflowMask,
 )
@@ -22,36 +20,24 @@ class StorageStateMask(GenericMask):
         inflow = registry[StorageInflowMask]
         storage_technologies = list(model.sets["set_storage_technologies"])
         nodes = list(model.sets["set_nodes"])
-        storage_times = list(model.sets["set_time_steps_storage"])
-        mask = xr.DataArray(
-            False,
-            coords={
-                "set_technologies": storage_technologies,
-                "set_location": nodes,
-                "set_time_steps_storage": storage_times,
-            },
-            dims=(
-                "set_technologies",
-                "set_location",
-                "set_time_steps_storage",
-            ),
+        index_values, index_names = model_constructor.create_custom_set(
+            [
+                "set_storage_technologies",
+                "set_nodes",
+                "set_years",
+                "set_representative_hours_storage",
+            ]
         )
-        for year in model.sets["set_years"]:
-            operation_times = (
-                model_constructor.time_steps.get_time_steps_year2operation(year)
-            )
-            year_active = available.sel(
-                set_technologies=storage_technologies,
-                set_location=nodes,
-                set_years=year,
-            ) | inflow.sel(
-                set_technologies=storage_technologies,
-                set_location=nodes,
-                set_time_steps_operation=operation_times,
-            ).any(
-                "set_time_steps_operation"
-            )
-            mask.loc[
-                :, :, model_constructor.time_steps.get_time_steps_year2storage(year)
-            ] = year_active
-        return mask
+        valid_storage_hours = model.sets.indices_to_mask(
+            index_values, index_names, (0, 0)
+        )[0].rename(
+            {
+                "set_storage_technologies": "set_technologies",
+                "set_nodes": "set_location",
+            }
+        )
+        year_active = available.sel(
+            set_technologies=storage_technologies,
+            set_location=nodes,
+        ) | inflow.any("set_representative_hours")
+        return valid_storage_hours & year_active

@@ -1,5 +1,3 @@
-import xarray as xr
-
 from zen_garden.elements.technology.masks import PowerOperationMask
 from zen_garden.model.component_types.constraint import GenericConstraint
 
@@ -33,22 +31,12 @@ class CapacityFactorStorageConstraint(GenericConstraint):
         if len(techs) == 0:
             return
         nodes = model_constructor.optimization_model.sets["set_nodes"]
-        times = model_constructor.optimization_model.lp_model.variables.coords[
-            "set_time_steps_operation"
-        ]
-        time_step_year = xr.DataArray(
-            [
-                model_constructor.time_steps.convert_time_step_operation2year(t)
-                for t in times.data
-            ],
-            coords=[times],
-        )
         term_capacity = (
             model_constructor.optimization_model.parameters.max_load.loc[
-                techs, nodes, :
+                techs, nodes, :, :
             ]
             * model_constructor.optimization_model.variables["capacity"].loc[
-                techs, "power", nodes, time_step_year
+                techs, "power", nodes, :
             ]
         ).rename(
             {
