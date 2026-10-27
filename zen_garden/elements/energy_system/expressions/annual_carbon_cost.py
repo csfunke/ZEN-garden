@@ -13,6 +13,30 @@ class AnnualCarbonCost(GenericExpression):
 
     @classmethod
     def get_expression(cls, model_constructor):
+        """Construct combine emissions prices and configured overshoot penalties.
+
+        Summary:
+            Combine emissions prices and configured overshoot penalties.
+
+        Formulation:
+
+        .. math::
+
+            E^{annual}_yp^{CO2}_y +\\mathbb1_{y =y^{last}}E^{budget +}p^{budget +}
+            +E^{annual +}_yp^{annual +}
+
+        The formulation applies over valid combinations of the declared indices.
+        Empty or masked combinations are not constructed.
+
+        Notation:
+            Symbols and indices follow ``sets_params_constraints.rst``.
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Expression over its declared model indices.
+        """
         optimization_model = model_constructor.optimization_model
         expression = (
             optimization_model.variables["carbon_emissions_annual"]

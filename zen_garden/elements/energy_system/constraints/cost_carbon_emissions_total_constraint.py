@@ -2,6 +2,8 @@ from zen_garden.model.component_types.constraint import GenericConstraint
 
 
 class CostCarbonEmissionsTotalConstraint(GenericConstraint):
+    """Cost Carbon Emissions Total."""
+
     name = "constraint_cost_carbon_emissions_total"
     indices = ("set_years",)
 
@@ -31,6 +33,12 @@ class CostCarbonEmissionsTotalConstraint(GenericConstraint):
         :math:`M_y^{\\mathrm{bud,over}}`: carbon-budget overshoot
         :math:`\\pi^{\\mathrm{CO_2,bud}}`: carbon price for budget overshoot. This cost
         is assigned only to the last modeled year.
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Constraint over its declared model indices.
         """
         model = model_constructor.optimization_model
         return (

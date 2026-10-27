@@ -20,6 +20,29 @@ class CapacityAdditionsFromNewInvestments(GenericExpression):
 
     @classmethod
     def get_expression(cls, model_constructor):
+        """Construct map modeled investment decisions to their commissioning years.
+
+        Summary:
+            Map modeled investment decisions to their commissioning years.
+
+        Formulation:
+
+        .. math::
+
+            \\sum_{v\\in\\mathcal Y:v+\\tau_h^{construction}=y}K^{investment}_{h,q,p,v}
+
+        The formulation applies over valid combinations of the declared indices.
+        Empty or masked combinations are not constructed.
+
+        Notation:
+            Symbols and indices follow ``sets_params_constraints.rst``.
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Expression over its declared model indices.
+        """
         optimization_model = model_constructor.optimization_model
         addition = optimization_model.variables["capacity_addition"]
         investment = optimization_model.variables["capacity_investment"]

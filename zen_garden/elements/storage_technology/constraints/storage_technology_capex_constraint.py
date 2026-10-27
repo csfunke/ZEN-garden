@@ -22,6 +22,29 @@ class StorageTechnologyCapexConstraint(GenericConstraint):
 
     @classmethod
     def get_constraint(cls, model_constructor):
+        """Construct the model component.
+
+        Summary:
+            Set storage overnight CAPEX from power- and energy-capacity additions.
+
+        Formulation:
+
+        .. math::
+
+            C^{capex,overnight}=k^{capex,storage}\\Delta K
+
+        The formulation applies over valid combinations of the declared indices.
+        Empty or masked combinations are not constructed.
+
+        Notation:
+            Symbols and indices follow ``sets_params_constraints.rst``.
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Constraint over its declared model indices.
+        """
         model = model_constructor.optimization_model
         cost = model.variables["cost_capex_overnight"].sel(
             set_technologies=model.sets["set_storage_technologies"],

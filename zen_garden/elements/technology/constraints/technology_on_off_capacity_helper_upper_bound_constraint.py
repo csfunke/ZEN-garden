@@ -22,6 +22,29 @@ class TechnologyOnOffCapacityHelperUpperBoundConstraint(GenericConstraint):
 
     @classmethod
     def get_constraint(cls, model_constructor):
+        """Construct apply the upper capacity bound to the on/off capacity helper.
+
+        Summary:
+            Apply the upper capacity bound to the on/off capacity helper.
+
+        Formulation:
+
+        .. math::
+
+            H\\leq K
+
+        The formulation applies over valid combinations of the declared indices.
+        Empty or masked combinations are not constructed.
+
+        Notation:
+            Symbols and indices follow ``sets_params_constraints.rst``.
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Constraint over its declared model indices.
+        """
         model = model_constructor.optimization_model
         helper = model.variables["capacity_on_off_helper_var"]
         capacity = model.variables["capacity"].sel(set_capacity_types="power")

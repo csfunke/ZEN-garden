@@ -20,6 +20,30 @@ class TransportOvernightCapex(GenericExpression):
 
     @classmethod
     def get_expression(cls, model_constructor):
+        """Construct combine fixed and distance-dependent transport investment costs.
+
+        Summary:
+            Combine fixed and distance-dependent transport investment costs.
+
+        Formulation:
+
+        .. math::
+
+            k^{capex,trans}_{h,e,y} \\Delta K_{h,power,e,y}
+            +k^{distance}_{h,e,y}G_{h,power,e,y}
+
+        The formulation applies over valid combinations of the declared indices.
+        Empty or masked combinations are not constructed.
+
+        Notation:
+            Symbols and indices follow ``sets_params_constraints.rst``.
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Expression over its declared model indices.
+        """
         model = model_constructor.optimization_model
         technologies = model.sets["set_transport_technologies"]
         edges = model.sets["set_edges"]

@@ -22,6 +22,29 @@ class DischargeStorageBinaryConstraint(GenericConstraint):
 
     @classmethod
     def get_constraint(cls, model_constructor):
+        """Construct allow discharging only while the storage charging mode is inactive.
+
+        Summary:
+            Allow discharging only while the storage charging mode is inactive.
+
+        Formulation:
+
+        .. math::
+
+            F^{dis}+\\bar k^{power}B^{ch}\\leq\\bar k^{power}
+
+        The formulation applies over valid combinations of the declared indices.
+        Empty or masked combinations are not constructed.
+
+        Notation:
+            Symbols and indices follow ``sets_params_constraints.rst``.
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Constraint over its declared model indices.
+        """
         model = model_constructor.optimization_model
         return (
             model.variables["flow_storage_discharge"]

@@ -6,6 +6,8 @@ from zen_garden.model.component_types.constraint import GenericConstraint
 
 
 class MinimumFullLoadHoursConstraint(GenericConstraint):
+    """Minimum Full Load Hours."""
+
     name = "constraint_minimum_full_load_hours"
     indices = (
         "set_conversion_technologies",
@@ -59,6 +61,12 @@ class MinimumFullLoadHoursConstraint(GenericConstraint):
         - :math:`F^{\\mathrm{ref}}_{h,n,t}`: reference carrier flow of the technology
           :math:`h` at node :math:`n` in time step :math:`t` in planning
           period :math:`y`
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Constraint over its declared model indices.
         """
         # get dimensions
         techs = model_constructor.optimization_model.sets["set_conversion_technologies"]

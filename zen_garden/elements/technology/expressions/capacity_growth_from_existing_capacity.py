@@ -15,6 +15,30 @@ class CapacityGrowthFromExistingCapacity(GenericExpression):
 
     @classmethod
     def get_expression(cls, model_constructor):
+        """Construct capacity growth supported by depreciated pre-horizon capacity.
+
+        Summary:
+            Capacity growth supported by depreciated pre-horizon capacity.
+
+        Formulation:
+
+        .. math::
+
+            d_{h,p,y} \\sum_{h\\prime}k^{existing}_{h\\prime,p}(1-\\delta_h)^{ \\Delta
+            y(y-y_0)-1 +\\tau_h-\\tau^{existing}_{h\\prime}}
+
+        The formulation applies over valid combinations of the declared indices.
+        Empty or masked combinations are not constructed.
+
+        Notation:
+            Symbols and indices follow ``sets_params_constraints.rst``.
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Expression over its declared model indices.
+        """
         model = model_constructor.optimization_model
         interval = model_constructor.config.system.interval_between_years
         capacity_addition = model.variables["capacity_addition"]

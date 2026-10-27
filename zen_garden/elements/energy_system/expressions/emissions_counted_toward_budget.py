@@ -11,6 +11,29 @@ class EmissionsCountedTowardBudget(GenericExpression):
 
     @classmethod
     def get_expression(cls, model_constructor):
+        """Construct combine cumulative, annual, and budget-overshoot emissions.
+
+        Summary:
+            Combine cumulative, annual, and budget-overshoot emissions.
+
+        Formulation:
+
+        .. math::
+
+            E^{cum}_y-E^{budget+}_y+\\mathbb1_{y\\ne y^{last}}E^{annual}_y(\\Delta y-1)
+
+        The formulation applies over valid combinations of the declared indices.
+        Empty or masked combinations are not constructed.
+
+        Notation:
+            Symbols and indices follow ``sets_params_constraints.rst``.
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Expression over its declared model indices.
+        """
         optimization_model = model_constructor.optimization_model
         not_last_year = [
             year != model_constructor.model_schema.set_years_entire_horizon[-1]

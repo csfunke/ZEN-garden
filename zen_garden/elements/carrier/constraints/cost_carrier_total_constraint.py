@@ -2,6 +2,8 @@ from zen_garden.model.component_types.constraint import GenericConstraint
 
 
 class CostCarrierTotalConstraint(GenericConstraint):
+    """Cost Carrier Total."""
+
     name = "constraint_cost_carrier_total"
     indices = ("set_years",)
 
@@ -25,6 +27,12 @@ class CostCarrierTotalConstraint(GenericConstraint):
         demand of carrier :math:`c` at node :math:`n` in time step :math:`t` of year
         :math:`y`
         :math:`\\Delta t_t`: duration of time step :math:`t`
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Constraint over its declared model indices.
         """
         model = model_constructor.optimization_model
         return (

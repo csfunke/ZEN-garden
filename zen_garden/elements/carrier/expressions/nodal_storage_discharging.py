@@ -20,6 +20,29 @@ class NodalStorageDischarging(GenericExpression):
 
     @classmethod
     def get_expression(cls, model_constructor):
+        """Construct aggregate discharging flow by storage reference carrier and node.
+
+        Summary:
+            Aggregate discharging flow by storage reference carrier and node.
+
+        Formulation:
+
+        .. math::
+
+            \\sum_{h:c_h^{ref}=c}F^{dis}_{h,n,y,r}
+
+        The formulation applies over valid combinations of the declared indices.
+        Empty or masked combinations are not constructed.
+
+        Notation:
+            Symbols and indices follow ``sets_params_constraints.rst``.
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Expression over its declared model indices.
+        """
         optimization_model = model_constructor.optimization_model
         variable = optimization_model.variables["flow_storage_discharge"]
         if variable.size == 0:

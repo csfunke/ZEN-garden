@@ -2,6 +2,8 @@ from zen_garden.model.component_types.constraint import GenericConstraint
 
 
 class CostCarrierConstraint(GenericConstraint):
+    """Cost Carrier."""
+
     name = "constraint_cost_carrier"
     indices = (
         "set_carriers",
@@ -32,6 +34,12 @@ class CostCarrierConstraint(GenericConstraint):
         node :math:`n` in time step :math:`t` of year :math:`y`
         :math:`F^{\\mathrm{exp}}_{c,n,t}`: flow of carrier :math:`c` exported at
         node :math:`n` in time step :math:`t` of year :math:`y`
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Constraint over its declared model indices.
         """
         ### formulate constraint
         lhs = (

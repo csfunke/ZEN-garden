@@ -19,6 +19,29 @@ class TransportTechnologyCapexConstraint(GenericConstraint):
 
     @classmethod
     def get_constraint(cls, model_constructor):
+        """Construct set transport capex and prohibit additions on unavailable edges.
+
+        Summary:
+            Set transport CAPEX and prohibit additions on unavailable edges.
+
+        Formulation:
+
+        .. math::
+
+            C^{capex,overnight}=k^{capex,trans}\\Delta K+k^{distance}G
+
+        The formulation applies over valid combinations of the declared indices.
+        Empty or masked combinations are not constructed.
+
+        Notation:
+            Symbols and indices follow ``sets_params_constraints.rst``.
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Constraint over its declared model indices.
+        """
         model = model_constructor.optimization_model
         technologies = model.sets["set_transport_technologies"]
         edges = model.sets["set_edges"]

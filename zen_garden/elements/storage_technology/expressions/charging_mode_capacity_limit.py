@@ -23,6 +23,29 @@ class ChargingModeCapacityLimit(GenericExpression):
 
     @classmethod
     def get_expression(cls, model_constructor):
+        """Construct multiply storage power limit by the charging-mode binary.
+
+        Summary:
+            Multiply storage power limit by the charging-mode binary.
+
+        Formulation:
+
+        .. math::
+
+            \\bar k^{power}_{h,n,y}B^{ch}_{h,n,y,r}
+
+        The formulation applies over valid combinations of the declared indices.
+        Empty or masked combinations are not constructed.
+
+        Notation:
+            Symbols and indices follow ``sets_params_constraints.rst``.
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Expression over its declared model indices.
+        """
         optimization_model = model_constructor.optimization_model
         return (
             optimization_model.variables["charge_storage_binary"]

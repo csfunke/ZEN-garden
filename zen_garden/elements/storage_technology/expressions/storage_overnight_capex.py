@@ -22,6 +22,29 @@ class StorageOvernightCapex(GenericExpression):
 
     @classmethod
     def get_expression(cls, model_constructor):
+        """Construct the model component.
+
+        Summary:
+            Multiply storage power and energy additions by their specific CAPEX.
+
+        Formulation:
+
+        .. math::
+
+            k^{capex,storage}_{h,q,n,y}\\Delta K_{h,q,n,y}
+
+        The formulation applies over valid combinations of the declared indices.
+        Empty or masked combinations are not constructed.
+
+        Notation:
+            Symbols and indices follow ``sets_params_constraints.rst``.
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Expression over its declared model indices.
+        """
         model = model_constructor.optimization_model
         technologies = model.sets["set_storage_technologies"]
         nodes = model.sets["set_nodes"]

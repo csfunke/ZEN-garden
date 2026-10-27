@@ -27,6 +27,34 @@ class NodalNetSupply(GenericExpression):
 
     @classmethod
     def get_expression(cls, model_constructor):
+        """Construct combine all production, consumption, trade, and storage flows.
+
+        Summary:
+            Combine all production, consumption, trade, and storage flows.
+
+        Formulation:
+
+        .. math::
+
+             \\sum_{h:c \\in \\mathcal C_h^{out}}F^{out}_{h,c,n,y,r}- \\sum_{h:c \\in
+            \\mathcal C_h^{in}}F^{in}_{h,c,n,y,r} + \\sum_{h,e
+            \\in\\delta^-(n)}(F^{trans}_{h,e,y,r}-F^{loss}_{h,e,y,r})- \\sum_{h,e
+            \\in\\delta^ +(n)}F^{trans}_{h,e,y,r}- \\sum_{h:c_h^{ref}
+            =c}F^{ch}_{h,n,y,r} + \\sum_{h:c_h^{ref} =c}F^{dis}_{h,n,y,r}
+            +F^{imp}_{c,n,y,r}-F^{exp}_{c,n,y,r} +F^{shed}_{c,n,y,r}
+
+        The formulation applies over valid combinations of the declared indices.
+        Empty or masked combinations are not constructed.
+
+        Notation:
+            Symbols and indices follow ``sets_params_constraints.rst``.
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Expression over its declared model indices.
+        """
         optimization_model = model_constructor.optimization_model
         expressions = optimization_model.expressions
         return lp.merge(

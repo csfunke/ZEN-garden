@@ -19,6 +19,29 @@ class CapacityEnergyToPowerRatioMaxConstraint(GenericConstraint):
 
     @classmethod
     def get_constraint(cls, model_constructor):
+        """Construct enforce the maximum energy-to-power ratio of storage additions.
+
+        Summary:
+            Enforce the maximum energy-to-power ratio of storage additions.
+
+        Formulation:
+
+        .. math::
+
+            \\Delta K_{energy}\\leq\\bar\\rho\\Delta K_{power}
+
+        The formulation applies over valid combinations of the declared indices.
+        Empty or masked combinations are not constructed.
+
+        Notation:
+            Symbols and indices follow ``sets_params_constraints.rst``.
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Constraint over its declared model indices.
+        """
         model = model_constructor.optimization_model
         ratio = model.parameters.energy_to_power_ratio_max
         mask = ratio != np.inf

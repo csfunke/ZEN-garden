@@ -20,6 +20,39 @@ class TechnologyDiffusionLimitTotalConstraint(GenericConstraint):
 
     @classmethod
     def get_constraint(cls, model_constructor):
+        """Construct the model component.
+
+        Summary:
+            Limit aggregate additions without counting cross-location spillovers twice.
+
+        Formulation:
+
+        .. math::
+
+            \\begin{aligned}
+            \\sum_p \\Delta K_{h,q,p,y} \\leq \\sum_p \\Bigg[{}
+            &d_{h,p,y} \\sum_{h'} k^{\\mathrm{existing}}_{h',p}
+            (1-\\delta_h)^{\\Delta y(y-y_0)-1+\\tau_h-\\tau^{\\mathrm{existing}}_{h'}}
+            \\\\
+            &+d_{h,p,y} \\sum_{v<y} \\Delta K_{h,q,p,v}
+            (1-\\delta_h)^{\\Delta y(y-1-v)} \\\\
+            &+\\sum_{h' \\ne h:c_{h'}^{\\mathrm{ref}}=c_h^{\\mathrm{ref}}}
+            s^{\\mathrm{market}}K^{\\mathrm{previous}}_{h',q,p,y}
+            +k^{\\mathrm{unbounded}}_{h,q,p,y}\\Bigg].
+            \\end{aligned}
+
+        The formulation applies over valid combinations of the declared indices.
+        Empty or masked combinations are not constructed.
+
+        Notation:
+            Symbols and indices follow ``sets_params_constraints.rst``.
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Constraint over its declared model indices.
+        """
         model = model_constructor.optimization_model
         additions = model.variables["capacity_addition"]
         lhs = (

@@ -22,6 +22,29 @@ class CarbonEmissionsTechnologyStorageConstraint(GenericConstraint):
 
     @classmethod
     def get_constraint(cls, model_constructor):
+        """Construct calculate operating emissions from storage throughput.
+
+        Summary:
+            Calculate operating emissions from storage throughput.
+
+        Formulation:
+
+        .. math::
+
+            E^{technology}=e^{technology}(F^{ch}+F^{dis})
+
+        The formulation applies over valid combinations of the declared indices.
+        Empty or masked combinations are not constructed.
+
+        Notation:
+            Symbols and indices follow ``sets_params_constraints.rst``.
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Constraint over its declared model indices.
+        """
         model = model_constructor.optimization_model
         technologies = model.sets["set_storage_technologies"]
         nodes = model.sets["set_nodes"]

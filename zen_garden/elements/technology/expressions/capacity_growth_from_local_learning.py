@@ -20,6 +20,29 @@ class CapacityGrowthFromLocalLearning(GenericExpression):
 
     @classmethod
     def get_expression(cls, model_constructor):
+        """Construct the model component.
+
+        Summary:
+            Capacity growth supported by depreciated additions at the same location.
+
+        Formulation:
+
+        .. math::
+
+            d_{h,p,y}\\sum_{v<y}\\Delta K_{h,q,p,v}(1-\\delta_h)^{\\Delta y(y-1-v)}
+
+        The formulation applies over valid combinations of the declared indices.
+        Empty or masked combinations are not constructed.
+
+        Notation:
+            Symbols and indices follow ``sets_params_constraints.rst``.
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Expression over its declared model indices.
+        """
         model = model_constructor.optimization_model
         capacity_addition = model.variables["capacity_addition"]
         years = pd.MultiIndex.from_tuples(

@@ -2,6 +2,8 @@ from zen_garden.model.component_types.constraint import GenericConstraint
 
 
 class CarbonEmissionsTechnologyTotalConstraint(GenericConstraint):
+    """Carbon Emissions Technology Total."""
+
     name = "constraint_carbon_emissions_technology_total"
     indices = ("set_years",)
 
@@ -24,6 +26,12 @@ class CarbonEmissionsTechnologyTotalConstraint(GenericConstraint):
         :math:`M^{\\mathrm{tech}}_{h,p,t}`: carbon emissions of technology
         :math:`h` at location :math:`p` in time step :math:`t` of year :math:`y`
         :math:`\\Delta t_t`: duration of time step :math:`t`
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Constraint over its declared model indices.
         """
         model = model_constructor.optimization_model
         return (

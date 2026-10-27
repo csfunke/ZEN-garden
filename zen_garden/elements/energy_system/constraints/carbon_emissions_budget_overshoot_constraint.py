@@ -4,6 +4,8 @@ from zen_garden.model.component_types.constraint import GenericConstraint
 
 
 class CarbonEmissionsBudgetOvershootConstraint(GenericConstraint):
+    """Carbon Emissions Budget Overshoot."""
+
     name = "constraint_carbon_emissions_budget_overshoot"
     indices = ("set_years",)
 
@@ -33,6 +35,12 @@ class CarbonEmissionsBudgetOvershootConstraint(GenericConstraint):
         :math:`M_y^{\\mathrm{bud,over}}`: overshoot carbon emissions of energy system at
         the end of the time horizon
         :math:`\\pi^{\\mathrm{CO_2,bud}}`: carbon price for budget overshoot
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Constraint over its declared model indices.
         """
         return (
             model_constructor.optimization_model.variables[

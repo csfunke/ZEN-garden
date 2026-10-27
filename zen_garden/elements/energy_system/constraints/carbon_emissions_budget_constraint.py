@@ -2,6 +2,8 @@ from zen_garden.model.component_types.constraint import GenericConstraint
 
 
 class CarbonEmissionsBudgetConstraint(GenericConstraint):
+    """Carbon Emissions Budget."""
+
     name = "constraint_carbon_emissions_budget"
     indices = ("set_years",)
 
@@ -30,6 +32,12 @@ class CarbonEmissionsBudgetConstraint(GenericConstraint):
         system
         :math:`y_\\mathrm{H}`: final year of the entire optimization horizon. The
         extrapolation term is omitted there because no intermediate years remain.
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Constraint over its declared model indices.
         """
         model = model_constructor.optimization_model
         return model.expressions["emissions_counted_toward_budget"] <= (

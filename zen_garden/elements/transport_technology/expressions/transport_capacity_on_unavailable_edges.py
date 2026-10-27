@@ -20,6 +20,29 @@ class TransportCapacityOnUnavailableEdges(GenericExpression):
 
     @classmethod
     def get_expression(cls, model_constructor):
+        """Construct select transport additions whose configured distance is infinite.
+
+        Summary:
+            Select transport additions whose configured distance is infinite.
+
+        Formulation:
+
+        .. math::
+
+            \\{\\Delta K_{h,power,e,y}:d_{h,e}=\\infty\\}
+
+        The formulation applies over valid combinations of the declared indices.
+        Empty or masked combinations are not constructed.
+
+        Notation:
+            Symbols and indices follow ``sets_params_constraints.rst``.
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Expression over its declared model indices.
+        """
         model = model_constructor.optimization_model
         technologies = model.sets["set_transport_technologies"]
         edges = model.sets["set_edges"]

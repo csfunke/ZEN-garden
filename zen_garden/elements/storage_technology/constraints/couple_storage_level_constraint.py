@@ -3,6 +3,8 @@ from zen_garden.model.component_types.constraint import GenericConstraint
 
 
 class CoupleStorageLevelConstraint(GenericConstraint):
+    """Couple Storage Level."""
+
     name = "constraint_couple_storage_level"
     indices = (
         "set_storage_technologies",
@@ -63,7 +65,13 @@ class CoupleStorageLevelConstraint(GenericConstraint):
         :math:`q^{\\mathrm{in}}_{h,n,\\sigma(\\tilde{t})}`: exogenous inflow into
         storage
         :math:`F^{\\mathrm{spill}}_{h,n,\\sigma(\\tilde{t})}`: storage spillage
-        """
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Constraint over its declared model indices.
+"""
         model = model_constructor.optimization_model
         return (
             model.expressions["storage_level_change_after_self_discharge"]

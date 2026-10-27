@@ -11,6 +11,29 @@ class AnnualVariableOpex(GenericExpression):
 
     @classmethod
     def get_expression(cls, model_constructor):
+        """Construct weight and sum variable opex over representative hours.
+
+        Summary:
+            Weight and sum variable OPEX over representative hours.
+
+        Formulation:
+
+        .. math::
+
+            \\sum_rw_rC^{opex,var}_{h,p,y,r}
+
+        The formulation applies over valid combinations of the declared indices.
+        Empty or masked combinations are not constructed.
+
+        Notation:
+            Symbols and indices follow ``sets_params_constraints.rst``.
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Expression over its declared model indices.
+        """
         optimization_model = model_constructor.optimization_model
         return (
             optimization_model.variables["cost_opex_variable"]

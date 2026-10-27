@@ -11,6 +11,29 @@ class AnnualTechnologyEmissions(GenericExpression):
 
     @classmethod
     def get_expression(cls, model_constructor):
+        """Construct the model component.
+
+        Summary:
+            Aggregate technology emissions over technologies, locations, and hours.
+
+        Formulation:
+
+        .. math::
+
+            \\sum_{h,p,r}w_rE^{technology}_{h,p,y,r}
+
+        The formulation applies over valid combinations of the declared indices.
+        Empty or masked combinations are not constructed.
+
+        Notation:
+            Symbols and indices follow ``sets_params_constraints.rst``.
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Expression over its declared model indices.
+        """
         optimization_model = model_constructor.optimization_model
         return (
             optimization_model.variables["carbon_emissions_technology"]

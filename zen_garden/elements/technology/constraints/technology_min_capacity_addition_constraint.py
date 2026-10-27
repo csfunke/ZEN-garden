@@ -3,6 +3,8 @@ from zen_garden.model.component_types.constraint import GenericConstraint
 
 
 class TechnologyMinCapacityAdditionConstraint(GenericConstraint):
+    """Technology Min Capacity Addition."""
+
     name = "constraint_technology_min_capacity_addition"
     indices = (
         "set_technologies",
@@ -37,6 +39,12 @@ class TechnologyMinCapacityAdditionConstraint(GenericConstraint):
         :math:`g_{h,p,y}`: binary variable which equals 1 if technology is installed
         at location :math:`p` in year :math:`y`
         :math:`\\Delta K_{h,p,y}`: capacity addition
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Constraint over its declared model indices.
         """
         capacity_addition_min = (
             model_constructor.optimization_model.parameters.capacity_addition_min

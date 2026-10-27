@@ -16,5 +16,28 @@ class ExistingCapacityIsBelowLimit(GenericExpression):
 
     @classmethod
     def get_expression(cls, model_constructor):
+        """Construct the model component.
+
+        Summary:
+            Indicate where existing capacity is below the configured upper limit.
+
+        Formulation:
+
+        .. math::
+
+            k^{existing}_{h,q,p,y}<\\bar k_{h,q,p,y}
+
+        The formulation applies over valid combinations of the declared indices.
+        Empty or masked combinations are not constructed.
+
+        Notation:
+            Symbols and indices follow ``sets_params_constraints.rst``.
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Expression over its declared model indices.
+        """
         parameters = model_constructor.optimization_model.parameters
         return parameters.existing_capacities < parameters.capacity_limit

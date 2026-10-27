@@ -20,6 +20,29 @@ class NodalConversionConsumption(GenericExpression):
 
     @classmethod
     def get_expression(cls, model_constructor):
+        """Construct aggregate conversion input flow by carrier and node.
+
+        Summary:
+            Aggregate conversion input flow by carrier and node.
+
+        Formulation:
+
+        .. math::
+
+            \\sum_{h:c\\in\\mathcal C_h^{in}}F^{in}_{h,c,n,y,r}
+
+        The formulation applies over valid combinations of the declared indices.
+        Empty or masked combinations are not constructed.
+
+        Notation:
+            Symbols and indices follow ``sets_params_constraints.rst``.
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Expression over its declared model indices.
+        """
         optimization_model = model_constructor.optimization_model
         index_values, index_names = optimization_model.create_custom_set(
             ["set_carriers", "set_nodes", "set_years", "set_representative_hours"]

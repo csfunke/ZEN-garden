@@ -17,6 +17,29 @@ class StoragePowerCapacityAddition(GenericExpression):
 
     @classmethod
     def get_expression(cls, model_constructor):
+        """Construct select storage power-capacity additions.
+
+        Summary:
+            Select storage power-capacity additions.
+
+        Formulation:
+
+        .. math::
+
+            \\Delta K_{h,power,n,y}
+
+        The formulation applies over valid combinations of the declared indices.
+        Empty or masked combinations are not constructed.
+
+        Notation:
+            Symbols and indices follow ``sets_params_constraints.rst``.
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Expression over its declared model indices.
+        """
         optimization_model = model_constructor.optimization_model
         return (
             optimization_model.variables["capacity_addition"]

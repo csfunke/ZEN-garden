@@ -20,6 +20,29 @@ class TechnologyCapacityLimitReachedConstraint(GenericConstraint):
 
     @classmethod
     def get_constraint(cls, model_constructor):
+        """Construct the model component.
+
+        Summary:
+            Prevent additions where existing capacity already reaches the limit.
+
+        Formulation:
+
+        .. math::
+
+            \\Delta K=0\\quad\\text{if }k^{existing}\\geq\\bar k
+
+        The formulation applies over valid combinations of the declared indices.
+        Empty or masked combinations are not constructed.
+
+        Notation:
+            Symbols and indices follow ``sets_params_constraints.rst``.
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Constraint over its declared model indices.
+        """
         optimization_model = model_constructor.optimization_model
         additions = optimization_model.variables["capacity_addition"]
         if not model_constructor.config.system.allow_investment:

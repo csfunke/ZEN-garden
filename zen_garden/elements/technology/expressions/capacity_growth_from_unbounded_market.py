@@ -25,6 +25,30 @@ class CapacityGrowthFromUnboundedMarket(GenericExpression):
 
     @classmethod
     def get_expression(cls, model_constructor):
+        """Construct the model component.
+
+        Summary:
+            Capacity growth supported by peers serving the same reference carrier.
+
+        Formulation:
+
+        .. math::
+
+             \\sum_{h\\prime\\ne h:c_{h\\prime}^{ref}
+            =c_h^{ref}}s^{market}K^{previous}_{h\\prime,q,p,y}
+
+        The formulation applies over valid combinations of the declared indices.
+        Empty or masked combinations are not constructed.
+
+        Notation:
+            Symbols and indices follow ``sets_params_constraints.rst``.
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Expression over its declared model indices.
+        """
         model = model_constructor.optimization_model
         capacity_previous = model.variables["capacity_previous"]
         shares = {

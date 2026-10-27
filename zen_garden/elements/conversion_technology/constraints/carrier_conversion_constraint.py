@@ -19,6 +19,29 @@ class CarrierConversionConstraint(GenericConstraint):
 
     @classmethod
     def get_constraint(cls, model_constructor):
+        """Construct couple dependent-carrier flows to conversion reference flow.
+
+        Summary:
+            Couple dependent-carrier flows to conversion reference flow.
+
+        Formulation:
+
+        .. math::
+
+            F^{dep}_{h,c,n,y,r}=\\phi_{h,c,n,y,r}F^{ref}_{h,n,y,r}
+
+        The formulation applies over valid combinations of the declared indices.
+        Empty or masked combinations are not constructed.
+
+        Notation:
+            Symbols and indices follow ``sets_params_constraints.rst``.
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Constraint over its declared model indices.
+        """
         model = model_constructor.optimization_model
         dependent_flow = model.expressions["conversion_dependent_flow"]
         conversion_factor = align_like(

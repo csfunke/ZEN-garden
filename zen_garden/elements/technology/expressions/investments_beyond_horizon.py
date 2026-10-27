@@ -20,6 +20,29 @@ class InvestmentsBeyondHorizon(GenericExpression):
 
     @classmethod
     def get_expression(cls, model_constructor):
+        """Construct the model component.
+
+        Summary:
+            Select investments that cannot commission inside the modeled horizon.
+
+        Formulation:
+
+        .. math::
+
+            \\{K^{investment}_{h,q,p,v}:v+\\tau_h^{construction}\\notin\\mathcal Y\\}
+
+        The formulation applies over valid combinations of the declared indices.
+        Empty or masked combinations are not constructed.
+
+        Notation:
+            Symbols and indices follow ``sets_params_constraints.rst``.
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Expression over its declared model indices.
+        """
         optimization_model = model_constructor.optimization_model
         investment = optimization_model.variables["capacity_investment"]
         mapping = get_investment_time_mapping(model_constructor)

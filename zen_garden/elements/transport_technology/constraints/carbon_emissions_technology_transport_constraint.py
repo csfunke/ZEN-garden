@@ -23,6 +23,29 @@ class CarbonEmissionsTechnologyTransportConstraint(GenericConstraint):
 
     @classmethod
     def get_constraint(cls, model_constructor):
+        """Construct calculate operating emissions from transported flow.
+
+        Summary:
+            Calculate operating emissions from transported flow.
+
+        Formulation:
+
+        .. math::
+
+            E^{technology}=e^{technology}F^{trans}
+
+        The formulation applies over valid combinations of the declared indices.
+        Empty or masked combinations are not constructed.
+
+        Notation:
+            Symbols and indices follow ``sets_params_constraints.rst``.
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Constraint over its declared model indices.
+        """
         model = model_constructor.optimization_model
         technologies = model.sets["set_transport_technologies"]
         edges = model.sets["set_edges"]

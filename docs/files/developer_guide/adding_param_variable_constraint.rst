@@ -269,7 +269,7 @@ case a single set is used, pass its name directly, e.g. ``indices =
     ``should_construct``.
 
 Structural masks
-~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^
 
 A structural mask describes indices at which a variable or constraint can
 affect a feasible solution. It is distinct from a boolean condition used to

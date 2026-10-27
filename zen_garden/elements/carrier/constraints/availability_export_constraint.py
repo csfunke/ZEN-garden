@@ -14,5 +14,28 @@ class AvailabilityExportConstraint(GenericConstraint):
 
     @classmethod
     def get_constraint(cls, model_constructor):
+        """Construct limit hourly exports to their node- and time-specific availability.
+
+        Summary:
+            Limit hourly exports to their node- and time-specific availability.
+
+        Formulation:
+
+        .. math::
+
+            F^{exp}_{c,n,y,r}\\leq a^{exp}_{c,n,y,r}
+
+        The formulation applies over valid combinations of the declared indices.
+        Empty or masked combinations are not constructed.
+
+        Notation:
+            Symbols and indices follow ``sets_params_constraints.rst``.
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Constraint over its declared model indices.
+        """
         model = model_constructor.optimization_model
         return model.variables["flow_export"] <= model.parameters.availability_export

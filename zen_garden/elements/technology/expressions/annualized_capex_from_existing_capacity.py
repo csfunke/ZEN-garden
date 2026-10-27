@@ -16,6 +16,29 @@ class AnnualizedCapexFromExistingCapacity(GenericExpression):
 
     @classmethod
     def get_expression(cls, model_constructor):
+        """Construct annualize remaining overnight capex of existing capacity.
+
+        Summary:
+            Annualize remaining overnight CAPEX of existing capacity.
+
+        Formulation:
+
+        .. math::
+
+            a(q,d_h)k^{existing,capex}_{h,p,y}
+
+        The formulation applies over valid combinations of the declared indices.
+        Empty or masked combinations are not constructed.
+
+        Notation:
+            Symbols and indices follow ``sets_params_constraints.rst``.
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Expression over its declared model indices.
+        """
         optimization_model = model_constructor.optimization_model
         discount_rate = optimization_model.parameters.discount_rate
         depreciation_time = optimization_model.parameters.depreciation_time

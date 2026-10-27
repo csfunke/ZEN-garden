@@ -2,6 +2,8 @@ from zen_garden.model.component_types.constraint import GenericConstraint
 
 
 class CostTotalConstraint(GenericConstraint):
+    """Cost Total."""
+
     name = "constraint_cost_total"
     indices = ("set_years",)
 
@@ -26,6 +28,12 @@ class CostTotalConstraint(GenericConstraint):
         importing and exporting carriers in year :math:`y`
         :math:`C^{\\mathrm{CO_2}}_y`: annual operational expenditures for carbon
         emissions in year :math:`y`
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Constraint over its declared model indices.
         """
         lhs = (
             model_constructor.optimization_model.variables["cost_total"]

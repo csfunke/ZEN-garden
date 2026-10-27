@@ -28,6 +28,43 @@ class TechnologyDiffusionLimitLocationConstraint(GenericConstraint):
 
     @classmethod
     def get_constraint(cls, model_constructor):
+        """Construct the model component.
+
+        Summary:
+            Limit additions at each location using available installation knowledge.
+
+        Formulation:
+
+        .. math::
+
+            \\begin{aligned}
+            \\Delta K_{h,q,p,y} \\leq {}&
+            d_{h,p,y} \\sum_{h'}
+            \\left[k^{\\mathrm{existing}}_{h',p}
+            +s_h \\sum_{p' \\ne p} k^{\\mathrm{existing}}_{h',p'}\\right]
+            (1-\\delta_h)^{\\Delta y(y-y_0)-1+\\tau_h-\\tau^{\\mathrm{existing}}_{h'}}
+            \\\\
+            &+d_{h,p,y} \\sum_{v<y}
+            \\left[\\Delta K_{h,q,p,v}
+            +s_h \\sum_{p' \\ne p} \\Delta K_{h,q,p',v}\\right]
+            (1-\\delta_h)^{\\Delta y(y-1-v)} \\\\
+            &+\\sum_{h' \\ne h:c_{h'}^{\\mathrm{ref}}=c_h^{\\mathrm{ref}}}
+            s^{\\mathrm{market}}K^{\\mathrm{previous}}_{h',q,p,y}
+            +k^{\\mathrm{unbounded}}_{h,q,p,y}.
+            \\end{aligned}
+
+        The formulation applies over valid combinations of the declared indices.
+        Empty or masked combinations are not constructed.
+
+        Notation:
+            Symbols and indices follow ``sets_params_constraints.rst``.
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Constraint over its declared model indices.
+        """
         model = model_constructor.optimization_model
         lhs = (
             model.variables["capacity_addition"]

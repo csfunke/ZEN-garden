@@ -39,6 +39,31 @@ class ConversionDependentFlow(GenericExpression):
 
     @classmethod
     def get_expression(cls, model_constructor):
+        """Construct select all configured dependent-carrier conversion flows.
+
+        Summary:
+            Select all configured dependent-carrier conversion flows.
+
+        Formulation:
+
+        .. math::
+
+            \\{F^{in}_{h,c,n,y,r}:c \\in \\mathcal C_h^{dep} \\cap \\mathcal C_h^{in}\\}
+            \\cup\\{F^{out}_{h,c,n,y,r}:c \\in \\mathcal C_h^{dep} \\cap \\mathcal
+            C_h^{out}\\}
+
+        The formulation applies over valid combinations of the declared indices.
+        Empty or masked combinations are not constructed.
+
+        Notation:
+            Symbols and indices follow ``sets_params_constraints.rst``.
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Expression over its declared model indices.
+        """
         optimization_model = model_constructor.optimization_model
         input_flow = optimization_model.variables["flow_conversion_input"].rename(
             {"set_input_carriers": "set_dependent_carriers"}

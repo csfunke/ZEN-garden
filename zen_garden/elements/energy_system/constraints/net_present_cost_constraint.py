@@ -2,6 +2,8 @@ from zen_garden.model.component_types.constraint import GenericConstraint
 
 
 class NetPresentCostConstraint(GenericConstraint):
+    """Net Present Cost."""
+
     name = "constraint_net_present_cost"
     indices = ("set_years",)
 
@@ -28,6 +30,12 @@ class NetPresentCostConstraint(GenericConstraint):
         :math:`C^{\\mathrm{total}}_y`: total cost of energy system in year :math:`y`
         :math:`r^{\\mathrm{disc}}`: discount rate
         :math:`\\Delta y`: interval between planning periods
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Constraint over its declared model indices.
         """
         model = model_constructor.optimization_model
         return (

@@ -22,6 +22,30 @@ class TechnologyLifetimePreviousConstraint(GenericConstraint):
 
     @classmethod
     def get_constraint(cls, model_constructor):
+        """Construct define capacity before additions made in the current year.
+
+        Summary:
+            Define capacity before additions made in the current year.
+
+        Formulation:
+
+        .. math::
+
+            K^{previous} =k^{existing} + \\sum_{v \\in \\mathcal V^{active}} \\Delta
+            K_v- \\Delta K_y
+
+        The formulation applies over valid combinations of the declared indices.
+        Empty or masked combinations are not constructed.
+
+        Notation:
+            Symbols and indices follow ``sets_params_constraints.rst``.
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Constraint over its declared model indices.
+        """
         optimization_model = model_constructor.optimization_model
         lhs = lp.merge(
             [

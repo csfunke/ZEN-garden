@@ -27,6 +27,32 @@ class TechnologyActivity(GenericExpression):
 
     @classmethod
     def get_expression(cls, model_constructor):
+        """Construct combine conversion, storage, and transport operational activity.
+
+        Summary:
+            Combine conversion, storage, and transport operational activity.
+
+        Formulation:
+
+        .. math::
+
+            \\begin{cases}F^{ref}_{h,p,y,r}&h \\in \\mathcal
+            H^{conv}\\\\F^{trans}_{h,p,y,r}&h \\in \\mathcal
+            H^{trans}\\\\F^{ch}_{h,p,y,r} +F^{dis}_{h,p,y,r}&h \\in \\mathcal
+            H^{storage}\\end{cases}
+
+        The formulation applies over valid combinations of the declared indices.
+        Empty or masked combinations are not constructed.
+
+        Notation:
+            Symbols and indices follow ``sets_params_constraints.rst``.
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Expression over its declared model indices.
+        """
         optimization_model = model_constructor.optimization_model
         conversion = optimization_model.expressions["conversion_reference_flow"].rename(
             {

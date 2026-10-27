@@ -22,6 +22,29 @@ class SurvivingCapacityAdditions(GenericExpression):
 
     @classmethod
     def get_expression(cls, model_constructor):
+        """Construct sum modeled capacity vintages that have not retired.
+
+        Summary:
+            Sum modeled capacity vintages that have not retired.
+
+        Formulation:
+
+        .. math::
+
+            \\sum_{v\\in\\mathcal V^{active}_{h,y}}\\Delta K_{h,q,p,v}
+
+        The formulation applies over valid combinations of the declared indices.
+        Empty or masked combinations are not constructed.
+
+        Notation:
+            Symbols and indices follow ``sets_params_constraints.rst``.
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Expression over its declared model indices.
+        """
         optimization_model = model_constructor.optimization_model
         capacity = optimization_model.variables["capacity"]
         active_vintages = pd.MultiIndex.from_tuples(

@@ -22,6 +22,30 @@ class TechnologyLifetimeConstraint(GenericConstraint):
 
     @classmethod
     def get_constraint(cls, model_constructor):
+        """Construct define end-of-year capacity from existing and surviving vintages.
+
+        Summary:
+            Define end-of-year capacity from existing and surviving vintages.
+
+        Formulation:
+
+        .. math::
+
+            K_{h,q,p,y} =k^{existing}_{h,q,p,y} + \\sum_{v \\in \\mathcal
+            V^{active}_{h,y}} \\Delta K_{h,q,p,v}
+
+        The formulation applies over valid combinations of the declared indices.
+        Empty or masked combinations are not constructed.
+
+        Notation:
+            Symbols and indices follow ``sets_params_constraints.rst``.
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Constraint over its declared model indices.
+        """
         optimization_model = model_constructor.optimization_model
         lhs = lp.merge(
             [

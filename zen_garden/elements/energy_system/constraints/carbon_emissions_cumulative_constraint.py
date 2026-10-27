@@ -4,6 +4,8 @@ from zen_garden.model.component_types.constraint import GenericConstraint
 
 
 class CarbonEmissionsCumulativeConstraint(GenericConstraint):
+    """Carbon Emissions Cumulative."""
+
     name = "constraint_carbon_emissions_cumulative"
     indices = ("set_years",)
 
@@ -27,6 +29,12 @@ class CarbonEmissionsCumulativeConstraint(GenericConstraint):
         :math:`M_y`: annual carbon emissions in year :math:`y`
         :math:`M_y^{\\mathrm{cum}}`: cumulative carbon emissions in year :math:`y`
         :math:`m_0^{\\mathrm{cum}}`: cumulative emissions before the modeled horizon
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Constraint over its declared model indices.
         """
         m = [
             True if year == model_constructor.model_schema.set_years[0] else False

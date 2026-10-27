@@ -2,6 +2,8 @@ from zen_garden.model.component_types.constraint import GenericConstraint
 
 
 class CarbonEmissionsAnnualLimitConstraint(GenericConstraint):
+    """Carbon Emissions Annual Limit."""
+
     name = "constraint_carbon_emissions_annual_limit"
     indices = ("set_years",)
 
@@ -19,6 +21,12 @@ class CarbonEmissionsAnnualLimitConstraint(GenericConstraint):
 
         :math:`M_y^{\\mathrm{ann,over}}`: permitted overshoot of the annual emissions
         limit
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Constraint over its declared model indices.
         """
         lhs = (
             model_constructor.optimization_model.variables["carbon_emissions_annual"]

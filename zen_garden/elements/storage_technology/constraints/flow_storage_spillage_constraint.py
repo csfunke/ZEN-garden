@@ -3,6 +3,8 @@ from zen_garden.model.component_types.constraint import GenericConstraint
 
 
 class FlowStorageSpillageConstraint(GenericConstraint):
+    """Flow Storage Spillage."""
+
     name = "constraint_flow_storage_spillage"
     indices = (
         "set_storage_technologies",
@@ -37,6 +39,12 @@ class FlowStorageSpillageConstraint(GenericConstraint):
         at node :math:`n` in time step :math:`t` of year :math:`y`
         :math:`q^{\\mathrm{in}}_{h,n,t}`: exogenous inflow into storage technology
         :math:`h` at node :math:`n` in time step :math:`t` of year :math:`y`
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Constraint over its declared model indices.
         """
         flow_storage_inflow = (
             model_constructor.optimization_model.parameters.flow_storage_inflow

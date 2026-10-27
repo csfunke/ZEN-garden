@@ -3,6 +3,8 @@ from zen_garden.model.component_types.constraint import GenericConstraint
 
 
 class CapacityFactorConversionConstraint(GenericConstraint):
+    """Capacity Factor Conversion."""
+
     name = "constraint_capacity_factor_conversion"
     indices = (
         "set_conversion_technologies",
@@ -39,6 +41,12 @@ class CapacityFactorConversionConstraint(GenericConstraint):
         :math:`F^{\\mathrm{ref}}_{h,n,t}`: reference carrier flow of the
         technology :math:`h` at node :math:`n` in time step :math:`t` of year
         :math:`y`
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Constraint over its declared model indices.
         """
         techs = model_constructor.optimization_model.sets["set_conversion_technologies"]
         nodes = model_constructor.optimization_model.sets["set_nodes"]

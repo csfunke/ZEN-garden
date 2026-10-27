@@ -11,6 +11,29 @@ class AnnualImportExportEmissions(GenericExpression):
 
     @classmethod
     def get_expression(cls, model_constructor):
+        """Construct the model component.
+
+        Summary:
+            Aggregate carrier-trading emissions over carriers, nodes, and hours.
+
+        Formulation:
+
+        .. math::
+
+            \\sum_{c,n,r}w_rE^{carrier}_{c,n,y,r}
+
+        The formulation applies over valid combinations of the declared indices.
+        Empty or masked combinations are not constructed.
+
+        Notation:
+            Symbols and indices follow ``sets_params_constraints.rst``.
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Expression over its declared model indices.
+        """
         optimization_model = model_constructor.optimization_model
         return (
             optimization_model.variables["carbon_emissions_carrier"]

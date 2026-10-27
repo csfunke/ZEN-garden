@@ -11,6 +11,29 @@ class AvailabilityImportYearlyConstraint(GenericConstraint):
 
     @classmethod
     def get_constraint(cls, model_constructor):
+        """Construct the model component.
+
+        Summary:
+            Limit annual imports to their carrier- and node-specific availability.
+
+        Formulation:
+
+        .. math::
+
+            \\sum_rw_rF^{imp}_{c,n,y,r}\\leq a^{imp,annual}_{c,n,y}
+
+        The formulation applies over valid combinations of the declared indices.
+        Empty or masked combinations are not constructed.
+
+        Notation:
+            Symbols and indices follow ``sets_params_constraints.rst``.
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Constraint over its declared model indices.
+        """
         model = model_constructor.optimization_model
         available = model.parameters.availability_import_yearly
         mask = available != np.inf

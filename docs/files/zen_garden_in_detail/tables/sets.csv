@@ -2,6 +2,7 @@ Set Name;Symbol;Indexed By;Description
 ``set_elements``;:math:`a \in \mathcal{A}`;--;Set of elements
 ``set_hours``;:math:`b \in \mathcal{B}`;--;Set of base timesteps (hours)
 ``set_carriers``;:math:`c \in \mathcal{C}`;--;Set of carriers
+``set_capacity_types``;:math:`q \in \mathcal{Q}`;--;Set of capacity types, such as power and energy capacity
 ``set_dependent_carriers``;:math:`c^{\mathrm{dep}} \in \mathcal{C}_{h}^{\mathrm{dep}}`;``set_conversion_technologies``;Set of carriers that are dependent on the reference carrier of a specific conversion technology
 ``set_input_carriers``;:math:`c^{\mathrm{in}} \in \mathcal{C}_{h}^{\mathrm{in}}`;``set_conversion_technologies``;Set of carriers that are an input to a specific conversion technology
 ``set_output_carriers``;:math:`c^{\mathrm{out}} \in \mathcal{C}_{h}^{\mathrm{out}}`;``set_conversion_technologies``;Set of carriers that are an output to a specific conversion technology
@@ -16,8 +17,11 @@ Set Name;Symbol;Indexed By;Description
 ``set_nodes``;:math:`n \in \mathcal{N}`;--;Set of nodes
 ``set_nodes_on_edges``;:math:`n \in \mathcal{N}_{e}`;``set_edges``;Set of nodes that constitute an edge
 ``set_location``;:math:`p \in \mathcal{P}`;--;Set of positions
+``set_representative_hours``;:math:`r \in \mathcal{R}_{y}`;``set_years``;Set of representative operational hours in a modeled year
+``set_representative_hours_storage``;:math:`\tilde{r} \in \widetilde{\mathcal{R}}_{y}`;``set_years``;Set of representative storage hours used to track storage levels
 ``set_time_steps_operation``;:math:`t \in \mathcal{T}_{y}`;--;Set of operational time steps
 ``set_time_steps_storage``;:math:`\tilde{t} \in \widetilde{\mathcal{T}}_{y}`;--;Set of storage level timesteps
+``set_time_steps_construction``;:math:`v \in \mathcal{Y}^{\mathrm{construction}}`;``set_technologies``;Set of investment years used to account for technology construction time
 ``set_technologies_existing``;:math:`v \in \mathcal{V}_{h}`;--;Set of existing technology capacities
 ``set_years``;:math:`y \in \mathcal{Y}`;--;Set of yearly timesteps within the current foresight horizon. For simulations with myopic foresight, this set is a subset :math:`\mathcal{Y}^\mathrm{horizon}`
 ``set_years_entire_horizon``;:math:`y \in \mathcal{Y}^{\mathrm{horizon}}`;--;All yearly timesteps, regardless of whether they are inside or outside the current foresight horizon.

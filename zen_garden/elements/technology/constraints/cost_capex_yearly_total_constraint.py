@@ -2,6 +2,8 @@ from zen_garden.model.component_types.constraint import GenericConstraint
 
 
 class CostCapexYearlyTotalConstraint(GenericConstraint):
+    """Cost Capex Yearly Total."""
+
     name = "constraint_cost_capex_yearly_total"
     indices = ("set_years",)
 
@@ -21,6 +23,12 @@ class CostCapexYearlyTotalConstraint(GenericConstraint):
         :math:`C^{\\mathrm{cap,ann}}_{h,p,y}`: annual CAPEX of technology :math:`h` at
         location :math:`p` in year :math:`y`
         :math:`p` in year :math:`y`, including all applicable capacity types
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Constraint over its declared model indices.
         """
         lhs = model_constructor.optimization_model.variables[
             "cost_capex_yearly_total"

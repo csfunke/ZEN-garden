@@ -3,6 +3,8 @@ from zen_garden.model.component_types.constraint import GenericConstraint
 
 
 class StorageLevelMaxConstraint(GenericConstraint):
+    """Storage Level Max."""
+
     name = "constraint_storage_level_max"
     indices = (
         "set_storage_technologies",
@@ -35,6 +37,12 @@ class StorageLevelMaxConstraint(GenericConstraint):
         of year :math:`y`
         :math:`K^{\\mathrm{energy}}_{h,n,y}`: energy capacity of storage technology
         :math:`h` on node :math:`n` in year :math:`y`
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Constraint over its declared model indices.
         """
         techs = model_constructor.optimization_model.sets["set_storage_technologies"]
         nodes = model_constructor.optimization_model.sets["set_nodes"]

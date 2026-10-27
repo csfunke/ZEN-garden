@@ -3,6 +3,8 @@ from zen_garden.model.component_types.constraint import GenericConstraint
 
 
 class CostOpexYearlyConstraint(GenericConstraint):
+    """Cost Opex Yearly."""
+
     name = "constraint_cost_opex_yearly"
     indices = ("set_technologies", "set_location", "set_years")
     masks = (CapacityAnyTypeMask,)
@@ -35,6 +37,12 @@ class CostOpexYearlyConstraint(GenericConstraint):
         :math:`\\kappa^{\\mathrm{op,fix}}_{h,p,y}`: specific fixed OPEX
         :math:`K_{h,p,y}`: installed capacity of technology :math:`h` at location
         :math:`p` in year :math:`y`
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Constraint over its declared model indices.
         """
         model = model_constructor.optimization_model
         return model.variables["cost_opex_yearly"] == (

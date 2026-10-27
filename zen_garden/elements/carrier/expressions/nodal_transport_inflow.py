@@ -21,6 +21,29 @@ class NodalTransportInflow(GenericExpression):
 
     @classmethod
     def get_expression(cls, model_constructor):
+        """Construct aggregate incoming transport flow after losses.
+
+        Summary:
+            Aggregate incoming transport flow after losses.
+
+        Formulation:
+
+        .. math::
+
+            \\sum_{h,e\\in\\delta^-(n)}(F^{trans}_{h,e,y,r}-F^{loss}_{h,e,y,r})
+
+        The formulation applies over valid combinations of the declared indices.
+        Empty or masked combinations are not constructed.
+
+        Notation:
+            Symbols and indices follow ``sets_params_constraints.rst``.
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Expression over its declared model indices.
+        """
         optimization_model = model_constructor.optimization_model
         if optimization_model.variables["flow_transport"].size == 0:
             return optimization_model.variables["flow_import"].where(False).to_linexpr()

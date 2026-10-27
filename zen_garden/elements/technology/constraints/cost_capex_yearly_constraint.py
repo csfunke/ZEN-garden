@@ -7,6 +7,8 @@ from zen_garden.model.component_types.constraint import GenericConstraint
 
 
 class CostCapexYearlyConstraint(GenericConstraint):
+    """Cost Capex Yearly."""
+
     name = "constraint_cost_capex_yearly"
     indices = (
         "set_technologies",
@@ -56,7 +58,13 @@ class CostCapexYearlyConstraint(GenericConstraint):
         additions
         :math:`\\kappa^{\\mathrm{cap,ex}}_{h,p,y}`: remaining overnight CAPEX of
         existing capacity
-        """
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Constraint over its declared model indices.
+"""
         model = model_constructor.optimization_model
         lhs = lp.merge(
             [

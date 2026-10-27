@@ -22,6 +22,29 @@ class TechnologyOnOffCapacityHelperLowerBoundConstraint(GenericConstraint):
 
     @classmethod
     def get_constraint(cls, model_constructor):
+        """Construct apply the lower mccormick bound to the on/off capacity helper.
+
+        Summary:
+            Apply the lower McCormick bound to the on/off capacity helper.
+
+        Formulation:
+
+        .. math::
+
+            H\\geq K-\\bar K(1-B)
+
+        The formulation applies over valid combinations of the declared indices.
+        Empty or masked combinations are not constructed.
+
+        Notation:
+            Symbols and indices follow ``sets_params_constraints.rst``.
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Constraint over its declared model indices.
+        """
         model = model_constructor.optimization_model
         helper = model.variables["capacity_on_off_helper_var"]
         limit = model.expressions["on_off_capacity_limit"]

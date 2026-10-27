@@ -9,6 +9,8 @@ from zen_garden.model.component_types.constraint import GenericConstraint
 
 
 class TransportTechnologyLossesFlowConstraint(GenericConstraint):
+    """Transport Technology Losses Flow."""
+
     name = "constraint_transport_technology_losses_flow"
     indices = (
         "set_transport_technologies",
@@ -58,6 +60,12 @@ class TransportTechnologyLossesFlowConstraint(GenericConstraint):
         from either a linear or exponential loss-rate input
         :math:`F^{\\mathrm{trans}}_{h,e,t}`: carrier flow through transport
         technology :math:`h` on edge :math:`e` in time step :math:`t` of year :math:`y`
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Constraint over its declared model indices.
         """
         optimization_model = model_constructor.optimization_model
         flow_transport = optimization_model.variables["flow_transport"]

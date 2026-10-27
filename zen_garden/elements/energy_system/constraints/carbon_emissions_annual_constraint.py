@@ -2,6 +2,8 @@ from zen_garden.model.component_types.constraint import GenericConstraint
 
 
 class CarbonEmissionsAnnualConstraint(GenericConstraint):
+    """Carbon Emissions Annual."""
+
     name = "constraint_carbon_emissions_annual"
     indices = ("set_years",)
 
@@ -21,6 +23,12 @@ class CarbonEmissionsAnnualConstraint(GenericConstraint):
         year :math:`y`
         :math:`M_y^\\mathrm{carrier}`: carbon emissions from carriers in year
         :math:`y`
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Constraint over its declared model indices.
         """
         lhs = (
             model_constructor.optimization_model.variables["carbon_emissions_annual"]

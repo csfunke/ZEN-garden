@@ -22,6 +22,29 @@ class AnnualizedCapexFromNewInvestments(GenericExpression):
 
     @classmethod
     def get_expression(cls, model_constructor):
+        """Construct annualize active overnight-capex vintages.
+
+        Summary:
+            Annualize active overnight-CAPEX vintages.
+
+        Formulation:
+
+        .. math::
+
+            \\sum_{v\\in\\mathcal V^{depr}_{h,y}}a(q,d_h)C^{capex,overnight}_{h,q,p,v}
+
+        The formulation applies over valid combinations of the declared indices.
+        Empty or masked combinations are not constructed.
+
+        Notation:
+            Symbols and indices follow ``sets_params_constraints.rst``.
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Expression over its declared model indices.
+        """
         optimization_model = model_constructor.optimization_model
         yearly_capex = optimization_model.variables["cost_capex_yearly"]
         discount_rate = optimization_model.parameters.discount_rate

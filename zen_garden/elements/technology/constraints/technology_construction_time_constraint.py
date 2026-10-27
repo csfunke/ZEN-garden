@@ -22,6 +22,30 @@ class TechnologyConstructionTimeConstraint(GenericConstraint):
 
     @classmethod
     def get_constraint(cls, model_constructor):
+        """Construct the model component.
+
+        Summary:
+            Link capacity additions to investments using construction lead time.
+
+        Formulation:
+
+        .. math::
+
+             \\Delta K_{h,q,p,y} = \\sum_{v:v +\\tau_h =y}K^{investment}_{h,q,p,v} +
+            \\sum_{v\\notin \\mathcal Y:v +\\tau_h =y}k^{investment,existing}_{h,q,p,v}
+
+        The formulation applies over valid combinations of the declared indices.
+        Empty or masked combinations are not constructed.
+
+        Notation:
+            Symbols and indices follow ``sets_params_constraints.rst``.
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Constraint over its declared model indices.
+        """
         optimization_model = model_constructor.optimization_model
         lhs = lp.merge(
             [

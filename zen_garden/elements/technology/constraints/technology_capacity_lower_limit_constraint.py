@@ -3,6 +3,8 @@ from zen_garden.model.component_types.constraint import GenericConstraint
 
 
 class TechnologyCapacityLowerLimitConstraint(GenericConstraint):
+    """Technology Capacity Lower Limit."""
+
     name = "constraint_technology_capacity_lower_limit"
     indices = (
         "set_technologies",
@@ -31,6 +33,12 @@ class TechnologyCapacityLowerLimitConstraint(GenericConstraint):
         :math:`K_{h,p,y}`: installed capacity of technology :math:`h` at
         location :math:`p` in year :math:`y`
         :math:`\\underline{k}_{h,p,y}`: lower capacity limit
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Constraint over its declared model indices.
         """
 
         # In TechnologyRules, we access variables and parameters directly via self

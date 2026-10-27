@@ -2,6 +2,8 @@ from zen_garden.model.component_types.constraint import GenericConstraint
 
 
 class CarbonEmissionsCarrierConstraint(GenericConstraint):
+    """Carbon Emissions Carrier."""
+
     name = "constraint_carbon_emissions_carrier"
     indices = (
         "set_carriers",
@@ -35,6 +37,12 @@ class CarbonEmissionsCarrierConstraint(GenericConstraint):
         node :math:`n` in time step :math:`t` of year :math:`y`
         :math:`F^{\\mathrm{exp}}_{c,n,t}`: flow of carrier :math:`c` exported at
         node :math:`n` in time step :math:`t` of year :math:`y`
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Constraint over its declared model indices.
         """
         carbon_intensity_carrier_import = (
             model_constructor.optimization_model.parameters.carbon_intensity_carrier_import

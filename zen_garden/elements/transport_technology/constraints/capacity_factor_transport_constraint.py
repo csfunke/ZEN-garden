@@ -4,6 +4,8 @@ from zen_garden.model.component_types.constraint import GenericConstraint
 
 
 class CapacityFactorTransportConstraint(GenericConstraint):
+    """Capacity Factor Transport."""
+
     name = "constraint_capacity_factor_transport"
     indices = (
         "set_transport_technologies",
@@ -39,6 +41,12 @@ class CapacityFactorTransportConstraint(GenericConstraint):
         :math:`y`
         :math:`K_{h,e,y}`: Capacity of transport technology :math:`h` on
         edge :math:`e` in year :math:`y`
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Constraint over its declared model indices.
         """
         techs = model_constructor.optimization_model.sets["set_transport_technologies"]
         edges = model_constructor.optimization_model.sets["set_edges"]

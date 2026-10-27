@@ -21,6 +21,31 @@ class ConversionReferenceFlow(GenericExpression):
 
     @classmethod
     def get_expression(cls, model_constructor):
+        """Construct the model component.
+
+        Summary:
+            Select each conversion technology's configured reference-carrier flow.
+
+        Formulation:
+
+        .. math::
+
+             \\sum_{c \\in \\mathcal C_h^{ref} \\cap \\mathcal
+            C_h^{in}}F^{in}_{h,c,n,y,r} + \\sum_{c \\in \\mathcal C_h^{ref} \\cap
+            \\mathcal C_h^{out}}F^{out}_{h,c,n,y,r}
+
+        The formulation applies over valid combinations of the declared indices.
+        Empty or masked combinations are not constructed.
+
+        Notation:
+            Symbols and indices follow ``sets_params_constraints.rst``.
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Expression over its declared model indices.
+        """
         optimization_model = model_constructor.optimization_model
         input_flow = optimization_model.variables["flow_conversion_input"]
         output_flow = optimization_model.variables["flow_conversion_output"]

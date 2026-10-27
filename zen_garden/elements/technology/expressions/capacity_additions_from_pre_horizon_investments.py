@@ -19,6 +19,30 @@ class CapacityAdditionsFromPreHorizonInvestments(GenericExpression):
 
     @classmethod
     def get_expression(cls, model_constructor):
+        """Construct map pre-horizon investments to their modeled commissioning years.
+
+        Summary:
+            Map pre-horizon investments to their modeled commissioning years.
+
+        Formulation:
+
+        .. math::
+
+             \\sum_{v\\notin \\mathcal Y:v +\\tau_h^{construction}
+            =y}k^{investment,existing}_{h,q,p,v}
+
+        The formulation applies over valid combinations of the declared indices.
+        Empty or masked combinations are not constructed.
+
+        Notation:
+            Symbols and indices follow ``sets_params_constraints.rst``.
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Expression over its declared model indices.
+        """
         optimization_model = model_constructor.optimization_model
         addition = optimization_model.variables["capacity_addition"]
         mapping = get_investment_time_mapping(model_constructor)

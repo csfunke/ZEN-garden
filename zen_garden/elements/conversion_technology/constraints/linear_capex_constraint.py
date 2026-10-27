@@ -13,6 +13,29 @@ class LinearCapexConstraint(GenericConstraint):
 
     @classmethod
     def get_constraint(cls, model_constructor):
+        """Construct set conversion overnight capex from power-capacity additions.
+
+        Summary:
+            Set conversion overnight CAPEX from power-capacity additions.
+
+        Formulation:
+
+        .. math::
+
+            C^{capex,overnight}=k^{capex,conv}\\Delta K
+
+        The formulation applies over valid combinations of the declared indices.
+        Empty or masked combinations are not constructed.
+
+        Notation:
+            Symbols and indices follow ``sets_params_constraints.rst``.
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Constraint over its declared model indices.
+        """
         model = model_constructor.optimization_model
         technologies = model.sets["set_conversion_technologies"]
         nodes = model.sets["set_nodes"]

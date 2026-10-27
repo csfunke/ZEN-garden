@@ -25,6 +25,29 @@ class StorageLevelChangeAfterSelfDischarge(GenericExpression):
 
     @classmethod
     def get_expression(cls, model_constructor):
+        """Construct compare storage level with the decayed predecessor level.
+
+        Summary:
+            Compare storage level with the decayed predecessor level.
+
+        Formulation:
+
+        .. math::
+
+            L_{h,n,y,r}(1-\\lambda^{self}_{h,n,y})^{\\tau_r}-L_{h,n,y,\\pi(r)}
+
+        The formulation applies over valid combinations of the declared indices.
+        Empty or masked combinations are not constructed.
+
+        Notation:
+            Symbols and indices follow ``sets_params_constraints.rst``.
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Expression over its declared model indices.
+        """
         optimization_model = model_constructor.optimization_model
         previous_year, previous_hour, coupling_mask = (
             get_previous_storage_time_step_arrays(model_constructor)

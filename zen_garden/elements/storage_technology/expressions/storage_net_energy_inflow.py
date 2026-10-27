@@ -36,6 +36,30 @@ class StorageNetEnergyInflow(GenericExpression):
 
     @classmethod
     def get_expression(cls, model_constructor):
+        """Construct the model component.
+
+        Summary:
+            Combine charge, discharge, inflow, spillage, and standing-loss duration.
+
+        Formulation:
+
+        .. math::
+
+            \\tau_r(\\eta^{ch}F^{ch}_{h,n,y,r}-F^{dis}_{h,n,y,r}/\\eta^{dis}
+            +f^{inflow}_{h,n,y,r}-F^{spill}_{h,n,y,r})
+
+        The formulation applies over valid combinations of the declared indices.
+        Empty or masked combinations are not constructed.
+
+        Notation:
+            Symbols and indices follow ``sets_params_constraints.rst``.
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Expression over its declared model indices.
+        """
         optimization_model = model_constructor.optimization_model
         self_discharge = optimization_model.parameters.self_discharge
         duration = optimization_model.parameters.duration_representative_hours_storage

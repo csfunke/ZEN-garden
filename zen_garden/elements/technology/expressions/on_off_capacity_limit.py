@@ -20,6 +20,29 @@ class OnOffCapacityLimit(GenericExpression):
 
     @classmethod
     def get_expression(cls, model_constructor):
+        """Construct the model component.
+
+        Summary:
+            Return and validate capacity upper bounds used by on/off linearization.
+
+        Formulation:
+
+        .. math::
+
+            \\bar K_{h,power,p,y}
+
+        The formulation applies over valid combinations of the declared indices.
+        Empty or masked combinations are not constructed.
+
+        Notation:
+            Symbols and indices follow ``sets_params_constraints.rst``.
+
+        Args:
+            model_constructor: Object containing the optimization model.
+
+        Returns:
+            Expression over its declared model indices.
+        """
         optimization_model = model_constructor.optimization_model
         capacity_limit = (
             optimization_model.variables["capacity"]
