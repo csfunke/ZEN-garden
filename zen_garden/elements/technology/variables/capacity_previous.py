@@ -8,8 +8,9 @@ class CapacityPrevious(GenericVariable):
     """Variable for installed technology capacity from previous year."""
 
     name = "capacity_previous"
+    symbol = r"K^{\mathrm{prev}}_{h,p,y}"
     indices = ["set_technologies", "set_capacity_types", "set_location", "set_years"]
-    doc = "Variable for size of installed technology at location l and BEFORE time t"
+    doc = "Size of installed technology h at location p before additions in period y."
     unit_category = {"energy_quantity": 1, "time": -1}
     masks = [CapacityAvailableMask]
 

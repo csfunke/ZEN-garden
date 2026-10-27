@@ -8,8 +8,9 @@ class Capacity(GenericVariable):
     """Variable for installed technology capacity."""
 
     name = "capacity"
+    symbol = r"K_{h,p,y}"
     indices = ["set_technologies", "set_capacity_types", "set_location", "set_years"]
-    doc = "Variable for size of installed technology at location l and time t"
+    doc = "Size of installed technology h at location p and period y."
     unit_category = {"energy_quantity": 1, "time": -1}
     masks = [CapacityAvailableMask]
 

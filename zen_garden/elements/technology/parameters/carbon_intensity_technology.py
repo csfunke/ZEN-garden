@@ -5,8 +5,9 @@ class CarbonIntensityTechnology(GenericParameter):
     """Carbon intensity of each technology."""
 
     name = "carbon_intensity_technology"
+    symbol = r"\varepsilon^{\mathrm{op}}_{h}"
     indices = ("set_technologies", "set_location")
-    doc = "Carbon intensity of each technology"
+    doc = "Parameter which specifies the carbon intensity of each technology."
     unit_category = {"emissions": 1, "energy_quantity": -1}
     dependencies = ["distance"]
 

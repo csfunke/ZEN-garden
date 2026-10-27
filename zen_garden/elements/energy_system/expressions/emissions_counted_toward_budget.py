@@ -45,5 +45,5 @@ class EmissionsCountedTowardBudget(GenericExpression):
             + optimization_model.variables["carbon_emissions_annual"].where(
                 not_last_year
             )
-            * (model_constructor.config.system.interval_between_years - 1)
+            * (optimization_model.parameters.interval_between_years - 1)
         )

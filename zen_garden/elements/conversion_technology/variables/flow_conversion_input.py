@@ -9,6 +9,7 @@ class FlowConversionInput(GenericVariable):
     """Variable for carrier input of conversion technologies."""
 
     name = "flow_conversion_input"
+    symbol = r"F^{\mathrm{conv,in}}_{h,c^{\mathrm{in}},n,t}"
     indices = [
         "set_conversion_technologies",
         "set_input_carriers",
@@ -16,7 +17,7 @@ class FlowConversionInput(GenericVariable):
         "set_years",
         "set_representative_hours",
     ]
-    doc = "Variable for carrier input of conversion technologies"
+    doc = "Carrier input of conversion technologies."
     unit_category = {"energy_quantity": 1, "time": -1}
     masks = [PowerOperationMask]
 

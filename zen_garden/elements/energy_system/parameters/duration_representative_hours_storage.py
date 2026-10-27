@@ -5,8 +5,9 @@ class DurationRepresentativeHoursStorage(GenericParameter):
     """Duration of each storage representative hour."""
 
     name = "duration_representative_hours_storage"
+    symbol = r"\tau^{\mathrm{stor}}_{\tilde{r}}"
     indices = ("set_years", "set_representative_hours_storage")
-    doc = "Duration of each storage representative hour"
+    doc = "Duration represented by a storage time step."
     unit_category = {"time": 1}
     squeeze_singleton = False
 

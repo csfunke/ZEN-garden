@@ -83,7 +83,7 @@ class MinimumFullLoadHoursConstraint(GenericConstraint):
         # create constraint
         term_capacity = (
             min_full_load_hours_fraction
-            * model_constructor.config.system.unaggregated_time_steps_per_year
+            * model_constructor.optimization_model.parameters.modeled_year_hours
             * model_constructor.optimization_model.variables["capacity"]
             .sel(
                 {

@@ -8,8 +8,9 @@ class CostCapexYearly(GenericVariable):
     """Variable for annual capex of having capacity."""
 
     name = "cost_capex_yearly"
+    symbol = r"C^{\mathrm{cap,ann}}_{h,p,y}"
     indices = ["set_technologies", "set_capacity_types", "set_location", "set_years"]
-    doc = "Variable for annual capex for having technology at location l"
+    doc = "Annual capex for having technology h at location p."
     unit_category = {"money": 1}
     masks = [CapexActiveMask]
 

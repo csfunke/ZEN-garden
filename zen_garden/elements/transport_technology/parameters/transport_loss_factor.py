@@ -7,8 +7,9 @@ class TransportLossFactor(GenericParameter):
     """Carrier losses due to transport."""
 
     name = "transport_loss_factor"
+    symbol = r"\lambda^{\mathrm{trans}}_{h,e}"
     indices = ("set_transport_technologies", "set_edges")
-    doc = "Carrier losses due to transport"
+    doc = "Fractional carrier loss along a transport connection."
     unit_category = {}
     dependencies = ["distance"]
 

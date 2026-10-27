@@ -5,13 +5,14 @@ class CapexSpecificStorage(GenericParameter):
     """Specific capex of storage technologies."""
 
     name = "capex_specific_storage"
+    symbol = r"\kappa^{\mathrm{cap}}_{h,q,y}"
     indices = (
         "set_storage_technologies",
         "set_capacity_types",
         "set_nodes",
         "set_years",
     )
-    doc = "Specific capex of storage technologies"
+    doc = "Specific capex of power- and energy-rated storage capacity."
     unit_category = {"money": 1, "energy_quantity": -1, "time": 1}
     capacity_types = True
 

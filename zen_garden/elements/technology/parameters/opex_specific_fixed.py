@@ -5,8 +5,9 @@ class OpexSpecificFixed(GenericParameter):
     """Fixed annual specific opex."""
 
     name = "opex_specific_fixed"
+    symbol = r"\kappa^{\mathrm{op,fix}}_{h,y}"
     indices = ("set_technologies", "set_capacity_types", "set_location", "set_years")
-    doc = "Fixed annual specific opex"
+    doc = "Parameter which specifies the fixed annual specific opex."
     unit_category = {"money": 1, "energy_quantity": -1, "time": 1}
     capacity_types = True
     dependencies = ["distance"]

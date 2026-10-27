@@ -5,7 +5,8 @@ class SetRepresentativeHoursStorage(GenericSet):
     """Storage representative hours indexed by modeled year."""
 
     name = "set_representative_hours_storage"
-    doc = "Set of storage representative hours by year"
+    symbol = r"\tilde{r} \in \widetilde{\mathcal{R}}_{y}"
+    doc = "Set of representative storage hours used to track storage levels."
     index_set = "set_years"
 
     @classmethod

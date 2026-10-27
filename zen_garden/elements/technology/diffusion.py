@@ -6,7 +6,7 @@ import pandas as pd
 def diffusion_rate(model_constructor):
     """Return maximum capacity growth over one investment interval."""
     model = model_constructor.optimization_model
-    interval = model_constructor.config.system.interval_between_years
+    interval = model_constructor.optimization_model.parameters.interval_between_years
     rate = (1 + model.parameters.max_diffusion_rate) ** interval - 1
     return rate.broadcast_like(model.variables["capacity_addition"].lower)
 

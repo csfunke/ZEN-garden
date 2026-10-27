@@ -25,6 +25,7 @@ class GenericParameter(ABC):
     """
 
     name: ClassVar[str]
+    symbol: ClassVar[str]
     indices: ClassVar[tuple[str, ...]]
     doc: ClassVar[str]
     unit_category: ClassVar[dict[str, int]]
@@ -44,11 +45,17 @@ class GenericParameter(ABC):
         if cls.__dict__.get("_abstract_parameter", False):
             return
 
-        required = ("name", "indices", "doc", "unit_category")
+        required = ("name", "symbol", "indices", "doc", "unit_category")
 
         for attr in required:
-            if not hasattr(cls, attr):
+            if attr not in cls.__dict__:
                 raise TypeError(f"{cls.__name__} must define {attr!r}")
+        for attr in ("name", "symbol", "doc"):
+            if (
+                not isinstance(getattr(cls, attr), str)
+                or not getattr(cls, attr).strip()
+            ):
+                raise TypeError(f"{cls.__name__}.{attr} must be a non-empty string")
         if not isinstance(cls.dependencies, list):
             raise TypeError(f"{cls.__name__}.dependencies must be a list")
         if cls.default_value is not None and cls.default_value not in (0, 1, "inf"):

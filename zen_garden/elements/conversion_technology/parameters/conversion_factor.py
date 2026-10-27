@@ -7,6 +7,7 @@ class ConversionFactor(GenericParameter):
     """Conversion factor."""
 
     name = "conversion_factor"
+    symbol = r"\eta^{\mathrm{conv}}_{h,c,t}"
     indices = (
         "set_conversion_technologies",
         "set_dependent_carriers",
@@ -14,7 +15,10 @@ class ConversionFactor(GenericParameter):
         "set_years",
         "set_representative_hours",
     )
-    doc = "Conversion factor"
+    doc = (
+        "Parameter which specifies the slope of the conversion efficiency if "
+        "approximated linearly."
+    )
     unit_category = {}
     time_series = True
     input_indices = ("set_nodes", "set_hours")

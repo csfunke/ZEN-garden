@@ -70,7 +70,7 @@ class CapacityGrowthFromSpillovers(GenericExpression):
         if not len(years):
             return capacity_addition.where(xr.DataArray(False))
 
-        interval = model_constructor.config.system.interval_between_years
+        interval = model.parameters.interval_between_years
         depreciation = model.parameters.knowledge_depreciation_rate
         factors_series = pd.Series(
             {

@@ -6,13 +6,17 @@ class ChargeStorageBinary(GenericVariable):
     """Variable for charge storage binary."""
 
     name = "charge_storage_binary"
+    symbol = r"z^{\mathrm{ch}}_{h,n,t}"
     indices = [
         "set_storage_technologies",
         "set_nodes",
         "set_years",
         "set_representative_hours",
     ]
-    doc = "Binary variable for charge binary for storage technology"
+    doc = (
+        "Binary variable indicating whether the storage technology is in "
+        "charging mode (1) or discharging mode (0)."
+    )
     unit_category = {}
     binary = True
     masks = [PowerOperationMask]

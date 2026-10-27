@@ -14,8 +14,9 @@ class ExistingCapex(GenericParameter):
     """
 
     name = "existing_capex"
+    symbol = r"k^{\mathrm{existing,capex}}_{h,p,y}"
     indices = ("set_technologies", "set_capacity_types", "set_location", "set_years")
-    doc = "Total capex of existing technologies at the optimization start"
+    doc = "Overnight capital cost associated with existing capacity."
     unit_category = {"money": 1}
     dependencies = ["capex_capacity_existing", "lifetime_existing", "lifetime"]
 

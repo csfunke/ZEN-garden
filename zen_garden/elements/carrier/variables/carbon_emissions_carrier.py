@@ -5,13 +5,14 @@ class CarbonEmissionsCarrier(GenericVariable):
     """Variable for carbon emissions from carrier import/export."""
 
     name = "carbon_emissions_carrier"
+    symbol = r"M^{\mathrm{carrier}}_{c,n,t}"
     indices = [
         "set_carriers",
         "set_nodes",
         "set_years",
         "set_representative_hours",
     ]
-    doc = "Variable for carbon emissions of importing and exporting carrier"
+    doc = "Carbon emissions of importing and exporting carriers."
     unit_category = {"emissions": 1, "time": -1}
 
     @classmethod

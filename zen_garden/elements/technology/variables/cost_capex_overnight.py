@@ -8,8 +8,9 @@ class CostCapexOvernight(GenericVariable):
     """Variable for capex of building capacity overnight."""
 
     name = "cost_capex_overnight"
+    symbol = r"C^{\mathrm{cap,overnight}}_{h,p,y}"
     indices = ["set_technologies", "set_capacity_types", "set_location", "set_years"]
-    doc = "Variable for capex for building technology at location l and time t"
+    doc = "Capex for building technology h at location p and period y."
     unit_category = {"money": 1}
     masks = [CapacityAdditionEligibleMask]
 

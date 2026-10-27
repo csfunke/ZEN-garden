@@ -9,6 +9,7 @@ class TechOnVar(GenericVariable):
     """Variable for technology on/off binary."""
 
     name = "tech_on_var"
+    symbol = r"z^{\mathrm{on}}_{h,p,t}"
     indices = [
         "set_technologies",
         "set_location",
@@ -16,8 +17,8 @@ class TechOnVar(GenericVariable):
         "set_representative_hours",
     ]
     doc = (
-        "Binary variable indicating when technology is switched on at location l and "
-        "time t"
+        "Binary variable which equals 1 when technology h is switched on at "
+        "location p and operational time step t, else 0."
     )
     unit_category = {}
     binary = True

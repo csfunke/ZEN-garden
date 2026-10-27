@@ -7,13 +7,14 @@ class CostShedDemand(GenericVariable):
     """Variable for cost of shedding demand of carrier."""
 
     name = "cost_shed_demand"
+    symbol = r"C^{\mathrm{shed}}_{c,n,t}"
     indices = [
         "set_carriers",
         "set_nodes",
         "set_years",
         "set_representative_hours",
     ]
-    doc = "Variable for cost of shedding demand of carrier"
+    doc = "Cost shed carrier demand."
     unit_category = {"money": 1, "time": -1}
 
     @classmethod

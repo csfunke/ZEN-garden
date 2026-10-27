@@ -8,16 +8,14 @@ class FlowStorageSpillage(GenericVariable):
     """Variable for storage spillage."""
 
     name = "flow_storage_spillage"
+    symbol = r"F^{\mathrm{spill}}_{h,n,t}"
     indices = [
         "set_storage_technologies",
         "set_nodes",
         "set_years",
         "set_representative_hours",
     ]
-    doc = (
-        "Variable for storage spillage of storage technology on node i in each "
-        "storage time step"
-    )
+    doc = "Energy spillage for storage technology."
     unit_category = {"energy_quantity": 1, "time": -1}
     masks = [StorageOperationMask]
 

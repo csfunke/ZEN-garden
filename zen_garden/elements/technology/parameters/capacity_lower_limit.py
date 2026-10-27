@@ -5,8 +5,9 @@ class CapacityLowerLimit(GenericParameter):
     """Lower capacity limit of technologies."""
 
     name = "capacity_lower_limit"
+    symbol = r"\underline{k}_{h,p,y}"
     indices = ("set_technologies", "set_capacity_types", "set_location", "set_years")
-    doc = "Lower capacity limit of technologies"
+    doc = "Parameter which specifies the capacity lower limit of technologies."
     unit_category = {"energy_quantity": 1, "time": -1}
     capacity_types = True
     default_value = 0

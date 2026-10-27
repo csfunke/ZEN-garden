@@ -42,6 +42,7 @@ A set is a class that inherits from
 declares:
 
 - ``name``: the name of the set, which should be unique.
+- ``symbol``: the raw LaTeX notation displayed in the generated notation table.
 - ``doc``: the documentation for the set, which should be a string describing the set.
 - ``index_set``: the set that is used as the index for the new set, if applicable.
 - ``get_data(cls, model_constructor)``: a classmethod that returns the data for the set,
@@ -59,7 +60,9 @@ Two examples, one without and one with an ``index_set``:
 
     # zen_garden/elements/energy_system/sets/set_technologies.py
     class SetTechnologies(GenericSet):
-        name, doc = "set_technologies", "Set of technologies"
+        name = "set_technologies"
+        symbol = r"h \in \mathcal{H}"
+        doc = "Technologies available to the energy system."
 
         @classmethod
         def get_data(cls, model_constructor):
@@ -69,11 +72,10 @@ Two examples, one without and one with an ``index_set``:
 
     # zen_garden/elements/technology/sets/set_reference_carriers.py
     class SetReferenceCarriers(GenericSet):
-        name, doc, index_set = (
-            "set_reference_carriers",
-            "Reference carriers indexed by technology",
-            "set_technologies",
-        )
+        name = "set_reference_carriers"
+        symbol = r"c_h^{\mathrm{ref}} \in \mathcal{C}"
+        doc = "Reference carrier used by each technology."
+        index_set = "set_technologies"
 
         @classmethod
         def get_data(cls, model_constructor):
@@ -97,6 +99,7 @@ and declares:
 
 - ``name``: the name of the parameter, matched against the parameter names used
   in the ``attributes.yaml``/``.csv`` input files (see :ref:`input_structure.attribute_files`).
+- ``symbol``: the raw LaTeX notation displayed in the generated notation table.
 - ``indices``: the sets that the parameter is indexed by in the optimization model.
 - ``doc``: the documentation for the parameter.
 - ``unit_category``: a dictionary with the unit-dimensionality categories of the
@@ -118,13 +121,14 @@ entire class:
         """Parameter which specifies the carrier demand."""
 
         name = "demand"
+        symbol = r"d_{c,n,y,r}"
         indices = (
             "set_carriers",
             "set_nodes",
             "set_years",
             "set_representative_hours",
         )
-        doc = "Parameter which specifies the carrier demand"
+        doc = "Carrier demand at each node and representative hour."
         unit_category = {"energy_quantity": 1, "time": -1}
         time_series = True
 
@@ -136,6 +140,11 @@ The class is added to the element's parameter list, e.g.
 :py:data:`CARRIER_PARAMETERS <zen_garden.elements.carrier.parameters.CARRIER_PARAMETERS>`
 in ``zen_garden/elements/carrier/parameters/__init__.py``, which the
 ``Carrier`` element class exposes through its ``own_parameters`` attribute.
+
+Every scalar or array used as a mathematical coefficient must have a registered
+``GenericParameter`` specification. Build switches remain configuration, while
+index sets, predecessor relationships, and other index mappings remain
+structural metadata.
 
 You do not need to call anything yourself: the base class's
 ``store_input_data`` classmethod reads the values from the element's input
@@ -206,6 +215,7 @@ A variable is a class that inherits from
 and declares:
 
 - ``name``: the name of the variable.
+- ``symbol``: the raw LaTeX notation displayed in the generated notation table.
 - ``indices``: the sets that the variable is indexed by.
 - ``doc``: the documentation for the variable.
 - ``unit_category``: a dictionary that defines the unit of the variable, in the
@@ -226,13 +236,14 @@ and declares:
         """Variable for import flow."""
 
         name = "flow_import"
+        symbol = r"F^{\mathrm{imp}}_{c,n,y,r}"
         indices = [
             "set_carriers",
             "set_nodes",
             "set_years",
             "set_representative_hours",
         ]
-        doc = "Variable for node- and time-dependent carrier import from the grid"
+        doc = "Carrier imported from the grid at each node and representative hour."
         unit_category = {"energy_quantity": 1, "time": -1}
 
         @classmethod
@@ -267,6 +278,11 @@ case a single set is used, pass its name directly, e.g. ``indices =
     model code should use ``GenericMask`` subclasses. Construction can be
     skipped entirely for the current configuration by overriding
     ``should_construct``.
+
+The notation page uses ``.. model-component-table::`` with ``sets``,
+``parameters``, or ``variables`` as its argument. The directive reads the
+registered component classes directly, so updating ``symbol``, ``doc``,
+``indices``, or ``unit_category`` updates the published table automatically.
 
 Structural masks
 ^^^^^^^^^^^^^^^^

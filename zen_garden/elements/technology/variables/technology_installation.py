@@ -9,8 +9,12 @@ class TechnologyInstallation(GenericVariable):
     """Variable for technology installation."""
 
     name = "technology_installation"
+    symbol = r"z^{\mathrm{install}}_{h,p,y}"
     indices = ["set_technologies", "set_capacity_types", "set_location", "set_years"]
-    doc = "Binary variable indicating installation of technology"
+    doc = (
+        "Binary variable which equals 1 if technology h is installed at "
+        "location p and period y, else 0."
+    )
     unit_category = {}
     binary = True
     masks = [CapacityAdditionEligibleMask, InstallationRelevantMask]

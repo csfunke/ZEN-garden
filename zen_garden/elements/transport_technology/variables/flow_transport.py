@@ -9,13 +9,14 @@ class FlowTransport(GenericVariable):
     """Variable for carrier flow through transport technology."""
 
     name = "flow_transport"
+    symbol = r"F^{\mathrm{trans}}_{h,e,t}"
     indices = [
         "set_transport_technologies",
         "set_edges",
         "set_years",
         "set_representative_hours",
     ]
-    doc = "Variable for carrier flow through transport technology on edge i and time t"
+    doc = "Carrier flow through a transport technology."
     unit_category = {"energy_quantity": 1, "time": -1}
     masks = [PowerOperationMask, FiniteTransportRouteMask]
 

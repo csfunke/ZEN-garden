@@ -51,7 +51,7 @@ class CapacityGrowthFromExistingCapacityWithSpillovers(GenericExpression):
             Expression over its declared model indices.
         """
         model = model_constructor.optimization_model
-        interval = model_constructor.config.system.interval_between_years
+        interval = model.parameters.interval_between_years
         capacity_addition = model.variables["capacity_addition"]
         capacity_existing = model.parameters.capacity_existing
         years_from_start = interval * (

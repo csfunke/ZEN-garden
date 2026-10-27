@@ -8,7 +8,7 @@ def year_offset(model_constructor, technology: str, parameter: str, *, ceil=Fals
     value = getattr(model_constructor.optimization_model.parameters, parameter).sel(
         set_technologies=technology
     )
-    interval = model_constructor.config.system.interval_between_years
+    interval = model_constructor.optimization_model.parameters.interval_between_years
     ratio = float(value.item()) / interval
     return int(np.ceil(ratio) if ceil else np.floor(ratio))
 

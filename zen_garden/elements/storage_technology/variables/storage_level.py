@@ -8,13 +8,14 @@ class StorageLevel(GenericVariable):
     """Variable for storage level."""
 
     name = "storage_level"
+    symbol = r"S^{\mathrm{level}}_{h,n,\tilde{t}}"
     indices = [
         "set_storage_technologies",
         "set_nodes",
         "set_years",
         "set_representative_hours_storage",
     ]
-    doc = "Variable for storage level of storage technology"
+    doc = "Storage level of storage technology on node in each storage time step."
     unit_category = {"energy_quantity": 1}
     masks = [StorageStateMask]
 

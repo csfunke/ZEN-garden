@@ -16,7 +16,7 @@ def _get_investment_time_step(
     """Return the investment year that commissions capacity in ``year``."""
     parameters = model_constructor.optimization_model.parameters.dict_parameters
     construction_time = parameters.construction_time[technology]
-    interval = model_constructor.config.system.interval_between_years
+    interval = model_constructor.optimization_model.parameters.interval_between_years
     return year - int(np.ceil(construction_time / interval))
 
 

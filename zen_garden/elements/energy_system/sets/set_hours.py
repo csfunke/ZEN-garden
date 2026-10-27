@@ -4,7 +4,9 @@ from zen_garden.model.component_types.set import GenericSet
 class SetHours(GenericSet):
     """Unaggregated within-year input hours."""
 
-    name, doc = "set_hours", "Set of unaggregated within-year hours"
+    name = "set_hours"
+    symbol = r"b \in \mathcal{B}"
+    doc = "Set of base timesteps (hours)."
 
     @classmethod
     def get_data(cls, model_constructor):

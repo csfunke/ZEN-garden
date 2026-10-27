@@ -5,7 +5,8 @@ class SetRepresentativeHours(GenericSet):
     """Operational representative hours shared by every modeled year."""
 
     name = "set_representative_hours"
-    doc = "Set of operational representative hours"
+    symbol = r"r \in \mathcal{R}_{y}"
+    doc = "Set of representative operational hours in a modeled year."
 
     @classmethod
     def get_data(cls, model_constructor):

@@ -11,15 +11,23 @@ class GenericSet(ABC):
     """Base class for model sets constructed from schema specifications."""
 
     name: ClassVar[str]
+    symbol: ClassVar[str]
     doc: ClassVar[str]
     index_set: ClassVar[str | None] = None
     indexing_set: ClassVar[bool] = False
 
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
-        for attribute in ("name", "doc"):
-            if not hasattr(cls, attribute):
+        for attribute in ("name", "symbol", "doc"):
+            if attribute not in cls.__dict__:
                 raise TypeError(f"{cls.__name__} must define {attribute!r}")
+            if (
+                not isinstance(getattr(cls, attribute), str)
+                or not getattr(cls, attribute).strip()
+            ):
+                raise TypeError(
+                    f"{cls.__name__}.{attribute} must be a non-empty string"
+                )
 
     @classmethod
     @abstractmethod

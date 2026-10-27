@@ -43,12 +43,12 @@ class DiscountedAnnualSystemCost(GenericExpression):
             interval = (
                 1
                 if year == model_constructor.model_schema.set_years_entire_horizon[-1]
-                else model_constructor.config.system.interval_between_years
+                else optimization_model.parameters.interval_between_years
             )
             factor[year] = sum(
                 (1 / (1 + optimization_model.parameters.discount_rate))
                 ** (
-                    model_constructor.config.system.interval_between_years
+                    optimization_model.parameters.interval_between_years
                     * (year - years[0])
                     + intermediate_step
                 )

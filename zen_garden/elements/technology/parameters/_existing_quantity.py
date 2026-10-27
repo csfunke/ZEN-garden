@@ -55,7 +55,7 @@ def _still_active_vintages(
     newly built unit. NaN remaining lifetimes (absent vintages) resolve to
     ``False``.
     """
-    interval = model_constructor.config.system.interval_between_years
+    interval = model_constructor.optimization_model.parameters.interval_between_years
     years = list(model_constructor.model_schema.set_years)
     year = xr.DataArray(years, coords={"set_years": years}, dims="set_years")
     elapsed = (year - years[0]) * interval

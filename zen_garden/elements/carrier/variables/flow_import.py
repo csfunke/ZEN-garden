@@ -7,13 +7,14 @@ class FlowImport(GenericVariable):
     """Variable for import flow."""
 
     name = "flow_import"
+    symbol = r"F^{\mathrm{imp}}_{c,n,t}"
     indices = [
         "set_carriers",
         "set_nodes",
         "set_years",
         "set_representative_hours",
     ]
-    doc = "Variable for node- and time-dependent carrier import from the grid"
+    doc = "Node- and time-dependent carrier import from the grid."
     unit_category = {"energy_quantity": 1, "time": -1}
 
     @classmethod

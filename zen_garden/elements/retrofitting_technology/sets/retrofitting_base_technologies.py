@@ -3,7 +3,8 @@ from zen_garden.model.component_types.set import GenericSet
 
 class SetRetrofittingBaseTechnologies(GenericSet):
     name = "set_retrofitting_base_technologies"
-    doc = "Base technologies indexed by retrofitting technology"
+    symbol = r"h^{\mathrm{base}} \in \mathcal{H}_{h^{\mathrm{retro}}}^{\mathrm{base}}"
+    doc = "Set of base technologies for a specific retrofitting technology."
     index_set = "set_retrofitting_technologies"
 
     @classmethod

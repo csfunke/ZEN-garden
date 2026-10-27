@@ -9,8 +9,9 @@ class TransportCapexDistance(GenericParameter):
     """
 
     name = "transport_capex_distance"
+    symbol = r"k^{\mathrm{distance}}_{h,e,y}"
     indices = ("set_transport_technologies", "set_edges", "set_years")
-    doc = "Transport distance times the specific capex per distance"
+    doc = "Distance-dependent capital cost for installing a transport technology."
     unit_category = {"money": 1}
     dependencies = ["distance", "capex_per_distance_transport"]
 

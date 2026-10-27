@@ -7,13 +7,14 @@ class CapacityOnOffHelperVar(TechOnVar):
     """Variable for capacity on/off helper."""
 
     name = "capacity_on_off_helper_var"
+    symbol = r"\widehat{K}_{h,p,t}"
     indices = [
         "set_technologies",
         "set_location",
         "set_years",
         "set_representative_hours",
     ]
-    doc = "Variable substituting the product of capacity and tech_on_var"
+    doc = "Product of installed capacity and the technology on/off state."
     unit_category = {"energy_quantity": 1, "time": -1}
     binary = False
 

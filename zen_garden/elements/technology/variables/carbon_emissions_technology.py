@@ -6,16 +6,14 @@ class CarbonEmissionsTechnology(GenericVariable):
     """Variable for carbon emissions from technology operation."""
 
     name = "carbon_emissions_technology"
+    symbol = r"M^{\mathrm{tech}}_{h,p,t}"
     indices = [
         "set_technologies",
         "set_location",
         "set_years",
         "set_representative_hours",
     ]
-    doc = (
-        "Variable for carbon emissions for operating technology at location l and "
-        "time t"
-    )
+    doc = "Carbon emissions for operating technology h at location p and time t."
     unit_category = {"emissions": 1, "time": -1}
     masks = [PowerOperationMask]
 

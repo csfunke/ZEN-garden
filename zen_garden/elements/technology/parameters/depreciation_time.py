@@ -5,8 +5,12 @@ class DepreciationTime(GenericParameter):
     """Depreciation time of a newly built technology."""
 
     name = "depreciation_time"
+    symbol = r"L^{\mathrm{dep}}_{h}"
     indices = ("set_technologies",)
-    doc = "Depreciation time of a newly built technology"
+    doc = (
+        "Parameter which specifies the depreciation time of invested "
+        "technologies (optional, default value is the lifetime)."
+    )
     unit_category = {}
     dependencies = ["lifetime"]
 

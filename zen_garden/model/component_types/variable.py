@@ -10,6 +10,7 @@ class GenericVariable(ABC):
     """Abstract base class for variables in ZEN-garden."""
 
     name: ClassVar[str]
+    symbol: ClassVar[str]
     indices: ClassVar[list[str]]
     doc: ClassVar[str]
     unit_category: ClassVar[dict[str, int]]
@@ -20,11 +21,17 @@ class GenericVariable(ABC):
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
 
-        required = ("name", "indices", "doc", "unit_category")
+        required = ("name", "symbol", "indices", "doc", "unit_category")
 
         for attr in required:
-            if not hasattr(cls, attr):
+            if attr not in cls.__dict__:
                 raise TypeError(f"{cls.__name__} must define {attr!r}")
+        for attr in ("name", "symbol", "doc"):
+            if (
+                not isinstance(getattr(cls, attr), str)
+                or not getattr(cls, attr).strip()
+            ):
+                raise TypeError(f"{cls.__name__}.{attr} must be a non-empty string")
         inherited_masks = []
         for base in cls.__bases__:
             inherited_masks.extend(getattr(base, "masks", ()))

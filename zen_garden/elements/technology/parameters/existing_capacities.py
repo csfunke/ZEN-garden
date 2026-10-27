@@ -14,8 +14,12 @@ class ExistingCapacities(GenericParameter):
     """
 
     name = "existing_capacities"
+    symbol = r"k^{\mathrm{existing}}_{h,q,p,y}"
     indices = ("set_technologies", "set_capacity_types", "set_location", "set_years")
-    doc = "Total available existing capacity at the optimization start"
+    doc = (
+        "Installed capacity that remains from investments made before the "
+        "modeled horizon."
+    )
     unit_category = {"energy_quantity": 1, "time": -1}
     dependencies = ["capacity_existing", "lifetime_existing", "lifetime"]
 

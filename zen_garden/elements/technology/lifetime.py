@@ -40,6 +40,6 @@ def _get_first_active_vintage_year(
         if use_depreciation_time
         else parameters.lifetime[technology]
     )
-    interval = model_constructor.config.system.interval_between_years
+    interval = model_constructor.optimization_model.parameters.interval_between_years
     active_intervals = int(np.floor(duration / interval)) - 1
     return year - active_intervals

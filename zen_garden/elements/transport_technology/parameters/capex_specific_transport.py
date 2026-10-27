@@ -5,8 +5,9 @@ class CapexSpecificTransport(GenericParameter):
     """Capex per capacity unit."""
 
     name = "capex_specific_transport"
+    symbol = r"\kappa^{\mathrm{cap,fixed}}_{h,y}"
     indices = ("set_transport_technologies", "set_edges", "set_years")
-    doc = "Capex per capacity unit"
+    doc = "Capex per unit for transport technologies."
     unit_category = {"money": 1, "energy_quantity": -1, "time": 1}
     dependencies = ["distance"]
 

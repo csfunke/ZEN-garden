@@ -41,6 +41,6 @@ class CumulativeEmissionsChange(GenericExpression):
             cumulative
             - cumulative.shift(set_years=1)
             - annual.shift(set_years=1)
-            * (model_constructor.config.system.interval_between_years - 1)
+            * (optimization_model.parameters.interval_between_years - 1)
             - annual
         )

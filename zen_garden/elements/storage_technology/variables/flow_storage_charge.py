@@ -8,13 +8,14 @@ class FlowStorageCharge(GenericVariable):
     """Variable for carrier flow into storage technology."""
 
     name = "flow_storage_charge"
+    symbol = r"F^{\mathrm{ch}}_{h,n,t}"
     indices = [
         "set_storage_technologies",
         "set_nodes",
         "set_years",
         "set_representative_hours",
     ]
-    doc = "Variable for carrier flow into storage technology on node i and time t"
+    doc = "Carrier flow into a storage technology."
     unit_category = {"energy_quantity": 1, "time": -1}
     masks = [PowerOperationMask]
 
