@@ -16,7 +16,6 @@ class NodalNetSupply(GenericExpression):
         "set_years",
         "set_representative_hours",
     )
-    units = "energy per time"
     dependencies = (
         "nodal_conversion_consumption",
         "nodal_conversion_production",

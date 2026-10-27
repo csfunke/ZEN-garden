@@ -8,7 +8,6 @@ class StoragePowerCapacityLimit(GenericExpression):
 
     name = "storage_power_capacity_limit"
     indices = ("set_storage_technologies", "set_nodes", "set_years")
-    units = "power"
 
     @classmethod
     def should_construct(cls, model_constructor):

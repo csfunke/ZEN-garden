@@ -13,7 +13,6 @@ class TotalCarbonEmissions(GenericExpression):
 
     name = "total_carbon_emissions"
     indices = ()
-    units = "mass of carbon dioxide equivalent"
     doc = "Cumulative carbon emissions at the end of the time horizon"
 
     @classmethod

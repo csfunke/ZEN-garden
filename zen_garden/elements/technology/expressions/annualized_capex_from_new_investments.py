@@ -19,7 +19,6 @@ class AnnualizedCapexFromNewInvestments(GenericExpression):
         "set_location",
         "set_years",
     )
-    units = "currency per year"
 
     @classmethod
     def get_expression(cls, model_constructor):

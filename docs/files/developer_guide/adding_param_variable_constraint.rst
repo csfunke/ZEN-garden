@@ -382,13 +382,11 @@ element's ``expressions`` package. Each expression module contains one class:
         """Annual imported energy by carrier, node, and year.
 
         Dimensions: set_carriers, set_nodes, set_years.
-        Units: energy.
         Dependencies: none.
         """
 
         name = "annual_import_quantity"
         indices = ("set_carriers", "set_nodes", "set_years")
-        units = "energy"
         dependencies = ()
 
         @classmethod
@@ -404,10 +402,15 @@ refer to expression names and may cross element packages. Construction rejects
 duplicate names, missing dependencies, and dependency cycles. Consumers access
 the result through ``optimization_model.expressions[<name>]``. ``indices`` lists
 the returned public dimensions and omits Linopy's internal ``_term`` dimension;
-``units`` describes the physical quantity. The final
-``build`` method verifies this declaration before registration. Document the
-expression's physical meaning in its class docstring and declare its indices,
-units, and named expression dependencies on the class.
+the final ``build`` method verifies this declaration before registration.
+Document the expression's physical meaning in its class docstring and declare
+its indices and named expression dependencies on the class.
+
+Keep the complete formulation owned by one expression in ``get_expression``.
+When a small class-local calculation improves readability, implement it as a
+private static method. Use a module-level utility only when multiple components
+consume the same independently meaningful domain operation; selecting different
+formulations through a helper argument is not considered reuse.
 
 Every concrete constraint module must contain exactly one class, one ``name``,
 and one ``get_constraint``. Splitting related equations is intentional; share

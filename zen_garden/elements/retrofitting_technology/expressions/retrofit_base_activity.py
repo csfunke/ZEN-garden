@@ -13,7 +13,6 @@ class RetrofitBaseActivity(GenericExpression):
         "set_years",
         "set_representative_hours",
     )
-    units = "energy per time"
     dependencies = ("conversion_reference_flow",)
 
     @classmethod

@@ -1,4 +1,4 @@
-from zen_garden.elements.technology.diffusion import existing_capacity_growth
+from zen_garden.elements.technology.diffusion import diffusion_rate
 from zen_garden.model.component_types.expression import GenericExpression
 
 
@@ -12,8 +12,23 @@ class CapacityGrowthFromExistingCapacity(GenericExpression):
         "set_location",
         "set_years",
     )
-    units = "power or energy according to set_capacity_types"
 
     @classmethod
     def get_expression(cls, model_constructor):
-        return existing_capacity_growth(model_constructor, include_spillovers=False)
+        model = model_constructor.optimization_model
+        interval = model_constructor.config.system.interval_between_years
+        capacity_addition = model.variables["capacity_addition"]
+        capacity_existing = model.parameters.capacity_existing
+        years_from_start = interval * (
+            capacity_addition.coords["set_years"] - model.sets["set_years"][0]
+        )
+        lifetime_existing = model.parameters.lifetime_existing
+        lifetime = model.parameters.lifetime
+        depreciation = model.parameters.knowledge_depreciation_rate
+        factor = (1 - depreciation) ** (
+            years_from_start - 1 + lifetime - lifetime_existing
+        )
+        factor = factor.where(lifetime >= lifetime_existing - years_from_start, 0)
+        return diffusion_rate(model_constructor) * (capacity_existing * factor).sum(
+            "set_technologies_existing"
+        )

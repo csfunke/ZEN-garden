@@ -311,7 +311,11 @@ the operational hour corresponding to each year-specific storage hour:
 
 .. code-block:: python
 
-    times_power2energy = get_storage_to_operation_mapping(model_constructor)
+    mapping = model_constructor.time_steps.storage_to_operation
+    years = list(model_constructor.optimization_model.sets["set_years"])
+    times_power2energy = mapping.loc[
+        mapping.index.get_level_values("set_years").isin(years)
+    ]
     storage_flow = map_and_expand(
         operational_storage_flow, times_power2energy
     )

@@ -16,7 +16,6 @@ class StorageLevelChangeAfterSelfDischarge(GenericExpression):
         "set_years",
         "set_representative_hours_storage",
     )
-    units = "energy"
 
     @classmethod
     def should_construct(cls, model_constructor):

@@ -16,7 +16,7 @@ def get_active_vintage_years(
     use_depreciation_time: bool = False,
 ) -> range:
     """Return modeled investment years still active in ``year``."""
-    first_year = get_first_active_vintage_year(
+    first_year = _get_first_active_vintage_year(
         model_constructor,
         technology,
         year,
@@ -26,7 +26,7 @@ def get_active_vintage_years(
     return range(max(first_year, first_modeled_year), year + 1)
 
 
-def get_first_active_vintage_year(
+def _get_first_active_vintage_year(
     model_constructor: "ModelConstructor",
     technology: str,
     year: int,

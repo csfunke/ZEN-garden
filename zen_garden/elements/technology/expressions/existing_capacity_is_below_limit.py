@@ -13,7 +13,6 @@ class ExistingCapacityIsBelowLimit(GenericExpression):
         "set_location",
         "set_years",
     )
-    units = "dimensionless Boolean"
 
     @classmethod
     def get_expression(cls, model_constructor):

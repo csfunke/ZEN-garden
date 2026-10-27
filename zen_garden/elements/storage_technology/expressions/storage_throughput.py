@@ -13,7 +13,6 @@ class StorageThroughput(GenericExpression):
         "set_years",
         "set_representative_hours",
     )
-    units = "energy per time"
 
     @classmethod
     def should_construct(cls, model_constructor):

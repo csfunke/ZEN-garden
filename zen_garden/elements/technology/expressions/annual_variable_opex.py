@@ -8,7 +8,6 @@ class AnnualVariableOpex(GenericExpression):
 
     name = "annual_variable_opex"
     indices = ("set_technologies", "set_location", "set_years")
-    units = "currency per year"
 
     @classmethod
     def get_expression(cls, model_constructor):

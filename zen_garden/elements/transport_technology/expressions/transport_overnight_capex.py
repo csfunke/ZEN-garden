@@ -10,7 +10,6 @@ class TransportOvernightCapex(GenericExpression):
 
     name = "transport_overnight_capex"
     indices = ("set_technologies", "set_location", "set_years")
-    units = "currency"
 
     @classmethod
     def should_construct(cls, model_constructor):

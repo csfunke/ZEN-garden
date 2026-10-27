@@ -8,7 +8,6 @@ class StorageEnergyCapacityAddition(GenericExpression):
 
     name = "storage_energy_capacity_addition"
     indices = ("set_storage_technologies", "set_location", "set_years")
-    units = "energy"
 
     @classmethod
     def should_construct(cls, model_constructor):

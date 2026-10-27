@@ -8,7 +8,6 @@ class EmissionsCountedTowardBudget(GenericExpression):
 
     name = "emissions_counted_toward_budget"
     indices = ("set_years",)
-    units = "mass of carbon dioxide equivalent"
 
     @classmethod
     def get_expression(cls, model_constructor):

@@ -18,14 +18,13 @@ class GenericExpression(ABC):
     constraints. :meth:`build` registers it on the optimization model via
     ``optimization_model.add_expression``; it is then reused elsewhere through
     ``optimization_model.expressions[<name>]``. Concrete expressions document
-    their public indices (excluding Linopy's internal ``_term`` dimension),
-    physical units, and named dependencies as immutable class metadata.
+    their public indices (excluding Linopy's internal ``_term`` dimension) and
+    named dependencies as immutable class metadata.
     """
 
     name: ClassVar[str]
     doc: ClassVar[str] = ""
     indices: ClassVar[tuple[str, ...]]
-    units: ClassVar[str]
     dependencies: ClassVar[tuple[str, ...]] = ()
 
     def __init_subclass__(cls, **kwargs):
@@ -36,10 +35,6 @@ class GenericExpression(ABC):
             raise TypeError(f"{cls.__name__} must define 'indices'")
         if not isinstance(cls.indices, tuple):
             raise TypeError(f"{cls.__name__}.indices must be a tuple")
-        if "units" not in cls.__dict__:
-            raise TypeError(f"{cls.__name__} must document 'units'")
-        if not isinstance(cls.units, str) or not cls.units:
-            raise TypeError(f"{cls.__name__}.units must be a non-empty string")
         if not isinstance(cls.dependencies, tuple):
             raise TypeError(f"{cls.__name__}.dependencies must be a tuple")
 

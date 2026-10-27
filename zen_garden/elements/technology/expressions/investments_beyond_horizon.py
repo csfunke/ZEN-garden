@@ -17,7 +17,6 @@ class InvestmentsBeyondHorizon(GenericExpression):
         "set_location",
         "set_time_steps_construction",
     )
-    units = "power or energy according to set_capacity_types"
 
     @classmethod
     def get_expression(cls, model_constructor):

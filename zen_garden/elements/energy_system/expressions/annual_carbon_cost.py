@@ -10,7 +10,6 @@ class AnnualCarbonCost(GenericExpression):
 
     name = "annual_carbon_cost"
     indices = ("set_years",)
-    units = "currency per year"
 
     @classmethod
     def get_expression(cls, model_constructor):

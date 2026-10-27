@@ -19,7 +19,6 @@ class SurvivingCapacityAdditions(GenericExpression):
         "set_location",
         "set_years",
     )
-    units = "power or energy according to set_capacity_types"
 
     @classmethod
     def get_expression(cls, model_constructor):

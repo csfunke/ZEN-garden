@@ -8,7 +8,6 @@ class AnnualTechnologyEmissions(GenericExpression):
 
     name = "annual_technology_emissions"
     indices = ("set_years",)
-    units = "mass of carbon dioxide equivalent per year"
 
     @classmethod
     def get_expression(cls, model_constructor):

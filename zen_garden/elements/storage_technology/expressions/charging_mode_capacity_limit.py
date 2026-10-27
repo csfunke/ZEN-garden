@@ -13,7 +13,6 @@ class ChargingModeCapacityLimit(GenericExpression):
         "set_years",
         "set_representative_hours",
     )
-    units = "power"
     dependencies = ("storage_power_capacity_limit",)
 
     @classmethod

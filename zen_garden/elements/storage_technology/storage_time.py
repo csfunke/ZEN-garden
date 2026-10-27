@@ -2,7 +2,6 @@
 
 from typing import TYPE_CHECKING, cast
 
-import pandas as pd
 import xarray as xr
 
 if TYPE_CHECKING:
@@ -49,13 +48,3 @@ def get_previous_storage_time_step_arrays(
         previous_hour.loc[year, storage_hour] = predecessor_hour
         mask.loc[year, storage_hour] = coupling_values[pair]
     return previous_year, previous_hour, mask
-
-
-def get_storage_to_operation_mapping(
-    model_constructor: "ModelConstructor",
-) -> pd.Series:
-    """Return the operational representative selected by each storage hour."""
-    mapping = model_constructor.time_steps.storage_to_operation
-    assert mapping is not None
-    years = list(model_constructor.optimization_model.sets["set_years"])
-    return mapping.loc[mapping.index.get_level_values("set_years").isin(years)]

@@ -1,8 +1,9 @@
 """Net energy entering storage during a storage time step."""
 
+import pandas as pd
+
 from zen_garden.elements.storage_technology.storage_time import (
     get_previous_storage_time_step_arrays,
-    get_storage_to_operation_mapping,
 )
 from zen_garden.model.component_types.expression import GenericExpression
 from zen_garden.model.linear_expression import map_and_expand
@@ -18,7 +19,14 @@ class StorageNetEnergyInflow(GenericExpression):
         "set_years",
         "set_representative_hours_storage",
     )
-    units = "energy"
+
+    @staticmethod
+    def _get_storage_to_operation_mapping(model_constructor) -> pd.Series:
+        """Return the operational representative selected by each storage hour."""
+        mapping = model_constructor.time_steps.storage_to_operation
+        assert mapping is not None
+        years = list(model_constructor.optimization_model.sets["set_years"])
+        return mapping.loc[mapping.index.get_level_values("set_years").isin(years)]
 
     @classmethod
     def should_construct(cls, model_constructor):
@@ -44,7 +52,7 @@ class StorageNetEnergyInflow(GenericExpression):
             - optimization_model.variables["flow_storage_spillage"]
         )
         mapped = map_and_expand(
-            net_flow, get_storage_to_operation_mapping(model_constructor)
+            net_flow, cls._get_storage_to_operation_mapping(model_constructor)
         )
         _, _, coupling_mask = get_previous_storage_time_step_arrays(model_constructor)
         return (mapped * multiplier).where(coupling_mask, 0.0)

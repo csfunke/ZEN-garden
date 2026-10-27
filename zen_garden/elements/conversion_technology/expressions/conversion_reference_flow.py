@@ -18,7 +18,6 @@ class ConversionReferenceFlow(GenericExpression):
         "set_years",
         "set_representative_hours",
     )
-    units = "energy per time"
 
     @classmethod
     def get_expression(cls, model_constructor):

@@ -10,7 +10,6 @@ class DiscountedAnnualSystemCost(GenericExpression):
 
     name = "discounted_annual_system_cost"
     indices = ("set_years",)
-    units = "currency"
 
     @classmethod
     def get_expression(cls, model_constructor):

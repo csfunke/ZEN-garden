@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from zen_garden.model.constructor import ModelConstructor
 
 
-def get_investment_time_step(
+def _get_investment_time_step(
     model_constructor: "ModelConstructor", technology: str, year: int
 ) -> int:
     """Return the investment year that commissions capacity in ``year``."""
@@ -30,7 +30,7 @@ def get_investment_time_mapping(
             (
                 technology,
                 year,
-                get_investment_time_step(model_constructor, technology, year),
+                _get_investment_time_step(model_constructor, technology, year),
             ): 1
             for technology, year in itertools.product(
                 optimization_model.sets["set_technologies"],

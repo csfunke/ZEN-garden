@@ -1,7 +1,10 @@
 """Nodal carrier consumption by conversion technologies."""
 
-from zen_garden.elements.carrier.nodal_flow import build_nodal_conversion_flow
+import linopy as lp
+from linopy.expressions import LinearExpression
+
 from zen_garden.model.component_types.expression import GenericExpression
+from zen_garden.model.registries.multi_index_helper import MultiIndexHelper
 
 
 class NodalConversionConsumption(GenericExpression):
@@ -14,8 +17,35 @@ class NodalConversionConsumption(GenericExpression):
         "set_years",
         "set_representative_hours",
     )
-    units = "energy per time"
 
     @classmethod
     def get_expression(cls, model_constructor):
-        return build_nodal_conversion_flow(model_constructor, "input")
+        optimization_model = model_constructor.optimization_model
+        index_values, index_names = optimization_model.create_custom_set(
+            ["set_carriers", "set_nodes", "set_years", "set_representative_hours"]
+        )
+        index = MultiIndexHelper(index_values, index_names)
+        flows = []
+        nodes = list(optimization_model.sets["set_nodes"])
+        for carrier in index.get_unique([0]):
+            technologies = [
+                technology
+                for technology in optimization_model.sets["set_conversion_technologies"]
+                if carrier in optimization_model.sets["set_input_carriers"][technology]
+            ]
+            selected_carrier = [carrier] if technologies else []
+            variable = optimization_model.variables["flow_conversion_input"]
+            flows.append(
+                variable.loc[technologies, selected_carrier, nodes].sum(
+                    variable.dims[:2]
+                )
+            )
+        merged = lp.merge(flows, dim="group", join="outer", cls=LinearExpression)
+        return optimization_model.constraints.reorder_group(
+            merged,
+            None,
+            None,
+            index.get_unique([0]),
+            index_names[:1],
+            optimization_model.lp_model,
+        )

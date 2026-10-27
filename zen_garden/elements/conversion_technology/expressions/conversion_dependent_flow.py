@@ -10,21 +10,6 @@ from zen_garden.model.component_types.expression import GenericExpression
 from zen_garden.utils import align_like
 
 
-def _dependent_carrier_mask(technologies, carriers, dependent_carriers):
-    """Return configured dependent-carrier membership by technology."""
-    mask = pd.Series(
-        {
-            (technology, carrier): carrier in dependent_carriers[technology]
-            for technology, carrier in itertools.product(technologies, carriers)
-        }
-    )
-    mask.index.names = [
-        "set_conversion_technologies",
-        "set_dependent_carriers",
-    ]
-    return mask
-
-
 class ConversionDependentFlow(GenericExpression):
     """Select all configured dependent-carrier conversion flows."""
 
@@ -36,7 +21,21 @@ class ConversionDependentFlow(GenericExpression):
         "set_years",
         "set_representative_hours",
     )
-    units = "energy per time"
+
+    @staticmethod
+    def _dependent_carrier_mask(technologies, carriers, dependent_carriers):
+        """Return configured dependent-carrier membership by technology."""
+        mask = pd.Series(
+            {
+                (technology, carrier): carrier in dependent_carriers[technology]
+                for technology, carrier in itertools.product(technologies, carriers)
+            }
+        )
+        mask.index.names = [
+            "set_conversion_technologies",
+            "set_dependent_carriers",
+        ]
+        return mask
 
     @classmethod
     def get_expression(cls, model_constructor):
@@ -50,7 +49,7 @@ class ConversionDependentFlow(GenericExpression):
         technologies = optimization_model.sets["set_conversion_technologies"]
 
         input_mask = align_like(
-            _dependent_carrier_mask(
+            cls._dependent_carrier_mask(
                 technologies,
                 optimization_model.sets["set_input_carriers"].coordinate_values,
                 optimization_model.sets["set_dependent_carriers"],
@@ -59,7 +58,7 @@ class ConversionDependentFlow(GenericExpression):
             astype=bool,
         )
         output_mask = align_like(
-            _dependent_carrier_mask(
+            cls._dependent_carrier_mask(
                 technologies,
                 optimization_model.sets["set_output_carriers"].coordinate_values,
                 optimization_model.sets["set_dependent_carriers"],

@@ -10,7 +10,6 @@ class ConversionOvernightCapex(GenericExpression):
 
     name = "conversion_overnight_capex"
     indices = ("set_technologies", "set_location", "set_years")
-    units = "currency"
 
     @classmethod
     def get_expression(cls, model_constructor):

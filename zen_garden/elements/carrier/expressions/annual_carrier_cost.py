@@ -8,7 +8,6 @@ class AnnualCarrierCost(GenericExpression):
 
     name = "annual_carrier_cost"
     indices = ("set_years",)
-    units = "currency per year"
 
     @classmethod
     def get_expression(cls, model_constructor):

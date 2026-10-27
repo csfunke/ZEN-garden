@@ -8,7 +8,6 @@ class AnnualImportQuantity(GenericExpression):
 
     name = "annual_import_quantity"
     indices = ("set_carriers", "set_nodes", "set_years")
-    units = "energy"
 
     @classmethod
     def get_expression(cls, model_constructor):

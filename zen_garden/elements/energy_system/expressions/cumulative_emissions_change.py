@@ -8,7 +8,6 @@ class CumulativeEmissionsChange(GenericExpression):
 
     name = "cumulative_emissions_change"
     indices = ("set_years",)
-    units = "mass of carbon dioxide equivalent"
 
     @classmethod
     def get_expression(cls, model_constructor):

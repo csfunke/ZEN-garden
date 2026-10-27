@@ -10,7 +10,6 @@ class TransportCapacityOnUnavailableEdges(GenericExpression):
 
     name = "transport_capacity_on_unavailable_edges"
     indices = ("set_technologies", "set_location", "set_years")
-    units = "power"
 
     @classmethod
     def should_construct(cls, model_constructor):
