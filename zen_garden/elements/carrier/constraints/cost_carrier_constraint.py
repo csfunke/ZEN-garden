@@ -2,8 +2,16 @@ from zen_garden.model.component_types.constraint import GenericConstraint
 
 
 class CostCarrierConstraint(GenericConstraint):
+    name = "constraint_cost_carrier"
+    indices = (
+        "set_carriers",
+        "set_nodes",
+        "set_years",
+        "set_representative_hours",
+    )
+
     @classmethod
-    def build(cls, model_constructor):
+    def get_constraint(cls, model_constructor):
         """Summary:
         Cost of importing and exporting carrier.
 
@@ -36,6 +44,4 @@ class CostCarrierConstraint(GenericConstraint):
         rhs = 0
         constraints = lhs == rhs
 
-        model_constructor.optimization_model.add_constraint(
-            "constraint_cost_carrier", constraints
-        )
+        return constraints

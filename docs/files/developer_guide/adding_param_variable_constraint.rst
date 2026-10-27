@@ -324,7 +324,7 @@ elements must not import masks from specialized elements.
 
 .. note::
 
-    The variables are available in the constraint's ``build`` method through
+    The variables are available in the constraint's ``get_constraint`` method through
     the ``model_constructor.optimization_model.variables[<variable_name>]`` attribute.
 
 .. _adding_elements.adding_constraints:
@@ -333,8 +333,10 @@ Adding Constraints
 ------------------
 
 A constraint is a class that inherits from
-:py:class:`GenericConstraint <zen_garden.model.component_types.constraint.GenericConstraint>`
-and implements a single ``build(cls, model_constructor)`` classmethod. The
+:py:class:`GenericConstraint <zen_garden.model.component_types.constraint.GenericConstraint>`,
+declares a unique ``name``, and implements one ``get_constraint`` classmethod.
+The final base-class ``build`` method calls ``should_construct``, obtains the
+single relation, applies the class's masks, and registers it. The
 class is added to the element's constraint list, e.g.
 :py:data:`CARRIER_CONSTRAINTS <zen_garden.elements.carrier.constraints.CARRIER_CONSTRAINTS>`
 in ``zen_garden/elements/carrier/constraints/__init__.py``, which the
@@ -342,34 +344,72 @@ in ``zen_garden/elements/carrier/constraints/__init__.py``, which the
 
 Please follow the constraint guide in :ref:`linopy.linopy`.
 
-A constraint class can declare structural masks for each constraint it emits.
-The dictionary key must be the exact registered constraint name:
+A constraint class can declare an immutable tuple of structural masks:
 
 .. code-block:: python
 
     class ExampleConstraint(GenericConstraint):
-        masks = {
-            "constraint_example": [AvailableAssetMask],
-        }
+        name = "constraint_example"
+        indices = ("set_assets", "set_years")
+        masks = (AvailableAssetMask,)
 
         @classmethod
-        def build(cls, model_constructor):
-            constraint = ...
-            cls.add_constraint(
-                model_constructor,
-                "constraint_example",
-                constraint,
-            )
+        def should_construct(cls, model_constructor):
+            return bool(model_constructor.optimization_model.sets["set_assets"])
 
-``add_constraint`` aligns and combines the declared masks with the constraint's
-own Linopy mask and its finite right-hand side. Conditions that formulate
-different mathematical branches should remain in ``build`` rather than being
-extracted into structural masks.
+        @classmethod
+        def get_constraint(cls, model_constructor):
+            return ...
 
-.. tip::
+``GenericConstraint.build`` aligns and combines these masks with the
+constraint's own Linopy mask and finite right-hand side. Use
+``should_construct`` only for a side-effect-free applicability check. Conditions
+that formulate different mathematical branches should remain in
+``get_constraint`` rather than being extracted into structural masks. The final
+``build`` method verifies that the returned constraint dimensions exactly match
+the declared ``indices`` tuple before registration.
 
-    You can add multiple constraints in the same ``build`` method,
-    for example ``constraint_availability_import`` and ``constraint_availability_export`` in
-    :py:class:`AvailabilityImportExportConstraint <zen_garden.elements.carrier.constraints.availability_import_export_constraint.AvailabilityImportExportConstraint>`.
-    The rule of thumb is to add all constraints that are related to the same topic in the same method
-    to reuse the code and avoid duplication. If the constraints are too different, it is better to create a new constraint class.
+Reusable Expressions
+--------------------
+
+Algebra reused by constraints or objectives, and logically independent parts of
+a complicated equation, should be a named ``GenericExpression`` in the owning
+element's ``expressions`` package. Each expression module contains one class:
+
+.. code-block:: python
+
+    class AnnualImportQuantity(GenericExpression):
+        """Annual imported energy by carrier, node, and year.
+
+        Dimensions: set_carriers, set_nodes, set_years.
+        Units: energy.
+        Dependencies: none.
+        """
+
+        name = "annual_import_quantity"
+        indices = ("set_carriers", "set_nodes", "set_years")
+        units = "energy"
+        dependencies = ()
+
+        @classmethod
+        def get_expression(cls, model_constructor):
+            model = model_constructor.optimization_model
+            return (
+                model.variables["flow_import"]
+                * model.parameters.weight_representative_hours
+            ).sum("set_representative_hours")
+
+List the class in the owning element's ``*_EXPRESSIONS`` registry. Dependencies
+refer to expression names and may cross element packages. Construction rejects
+duplicate names, missing dependencies, and dependency cycles. Consumers access
+the result through ``optimization_model.expressions[<name>]``. ``indices`` lists
+the returned public dimensions and omits Linopy's internal ``_term`` dimension;
+``units`` describes the physical quantity. The final
+``build`` method verifies this declaration before registration. Document the
+expression's physical meaning in its class docstring and declare its indices,
+units, and named expression dependencies on the class.
+
+Every concrete constraint module must contain exactly one class, one ``name``,
+and one ``get_constraint``. Splitting related equations is intentional; share
+their algebra through expressions rather than emitting multiple constraints
+from one class.

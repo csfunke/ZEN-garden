@@ -2,8 +2,11 @@ from zen_garden.model.component_types.constraint import GenericConstraint
 
 
 class CarbonEmissionsAnnualLimitConstraint(GenericConstraint):
+    name = "constraint_carbon_emissions_annual_limit"
+    indices = ("set_years",)
+
     @classmethod
-    def build(cls, model_constructor):
+    def get_constraint(cls, model_constructor):
         """Summary:
         Time dependent carbon emissions limit from technologies and carriers.
 
@@ -28,6 +31,4 @@ class CarbonEmissionsAnnualLimitConstraint(GenericConstraint):
         )
         constraints = lhs <= rhs
 
-        model_constructor.optimization_model.add_constraint(
-            "constraint_carbon_emissions_annual_limit", constraints
-        )
+        return constraints

@@ -4,15 +4,23 @@ from zen_garden.model.component_types.constraint import GenericConstraint
 
 
 class CapacityFactorTransportConstraint(GenericConstraint):
-    masks = {
-        "constraint_capacity_factor_transport": [
-            PowerOperationMask,
-            FiniteTransportRouteMask,
-        ]
-    }
+    name = "constraint_capacity_factor_transport"
+    indices = (
+        "set_transport_technologies",
+        "set_edges",
+        "set_years",
+        "set_representative_hours",
+    )
+    masks = (PowerOperationMask, FiniteTransportRouteMask)
 
     @classmethod
-    def build(cls, model_constructor):
+    def should_construct(cls, model_constructor):
+        return bool(
+            model_constructor.optimization_model.sets["set_transport_technologies"]
+        )
+
+    @classmethod
+    def get_constraint(cls, model_constructor):
         """Summary:
         Load is limited by the installed capacity and the maximum load factor.
 
@@ -33,8 +41,6 @@ class CapacityFactorTransportConstraint(GenericConstraint):
         edge :math:`e` in year :math:`y`
         """
         techs = model_constructor.optimization_model.sets["set_transport_technologies"]
-        if len(techs) == 0:
-            return
         edges = model_constructor.optimization_model.sets["set_edges"]
         term_capacity = (
             model_constructor.optimization_model.parameters.max_load.loc[
@@ -59,6 +65,4 @@ class CapacityFactorTransportConstraint(GenericConstraint):
         rhs = 0
         constraints = lhs >= rhs
         ### return
-        cls.add_constraint(
-            model_constructor, "constraint_capacity_factor_transport", constraints
-        )
+        return constraints

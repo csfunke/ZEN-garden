@@ -2,8 +2,11 @@ from zen_garden.model.component_types.constraint import GenericConstraint
 
 
 class CarbonEmissionsTechnologyTotalConstraint(GenericConstraint):
+    name = "constraint_carbon_emissions_technology_total"
+    indices = ("set_years",)
+
     @classmethod
-    def build(cls, model_constructor):
+    def get_constraint(cls, model_constructor):
         """Summary:
         Calculate total carbon emissions of each technology.
 
@@ -22,24 +25,8 @@ class CarbonEmissionsTechnologyTotalConstraint(GenericConstraint):
         :math:`h` at location :math:`p` in time step :math:`t` of year :math:`y`
         :math:`\\Delta t_t`: duration of time step :math:`t`
         """
-        weights = (
-            model_constructor.optimization_model.parameters.weight_representative_hours
-        )
-        term_summed_carbon_emissions_technology = (
-            model_constructor.optimization_model.variables[
-                "carbon_emissions_technology"
-            ]
-            * weights
-        ).sum(["set_technologies", "set_location", "set_representative_hours"])
-        lhs = (
-            model_constructor.optimization_model.variables[
-                "carbon_emissions_technology_total"
-            ]
-            - term_summed_carbon_emissions_technology
-        )
-        rhs = 0
-        constraints = lhs == rhs
-
-        model_constructor.optimization_model.add_constraint(
-            "constraint_carbon_emissions_technology_total", constraints
+        model = model_constructor.optimization_model
+        return (
+            model.variables["carbon_emissions_technology_total"]
+            == model.expressions["annual_technology_emissions"]
         )

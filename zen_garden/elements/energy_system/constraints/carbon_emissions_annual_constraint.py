@@ -2,8 +2,11 @@ from zen_garden.model.component_types.constraint import GenericConstraint
 
 
 class CarbonEmissionsAnnualConstraint(GenericConstraint):
+    name = "constraint_carbon_emissions_annual"
+    indices = ("set_years",)
+
     @classmethod
-    def build(cls, model_constructor):
+    def get_constraint(cls, model_constructor):
         """Summary:
         Add up all carbon emissions from technologies and carriers.
 
@@ -31,6 +34,4 @@ class CarbonEmissionsAnnualConstraint(GenericConstraint):
         rhs = 0
         constraints = lhs == rhs
 
-        model_constructor.optimization_model.add_constraint(
-            "constraint_carbon_emissions_annual", constraints
-        )
+        return constraints

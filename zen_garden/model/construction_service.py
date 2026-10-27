@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Callable
 
 import psutil
 
+from zen_garden.model.component_types.expression import GenericExpression
 from zen_garden.model.constructor import ModelConstructor
 from zen_garden.service_container import ServiceContainer
 
@@ -98,9 +99,8 @@ class ModelConstructionService:
                 for mask in variable.masks:
                     mask_owners.setdefault(mask, model_constructor)
             for constraint in model_constructor.constraints:
-                for masks in constraint.masks.values():
-                    for mask in masks:
-                        mask_owners.setdefault(mask, model_constructor)
+                for mask in constraint.masks:
+                    mask_owners.setdefault(mask, model_constructor)
         self.optimization_model.masks.build_all(mask_owners)
 
     @measure_run_time
@@ -110,8 +110,23 @@ class ModelConstructionService:
 
     @measure_run_time
     def _construct_expressions(self):
+        expression_owners = {}
+        expressions = []
         for model_constructor in self._model_constructors:
-            model_constructor.construct_expressions()
+            for expression in model_constructor.expressions:
+                existing = expression_owners.get(expression.name)
+                if existing is not None:
+                    raise ValueError(
+                        f"Multiple expression specifications define "
+                        f"{expression.name!r}: {existing[0].__name__} and "
+                        f"{expression.__name__}"
+                    )
+                expression_owners[expression.name] = (expression, model_constructor)
+                expressions.append(expression)
+
+        ordered = GenericExpression.construction_order(expressions)
+        for expression in ordered:
+            expression.build(expression_owners[expression.name][1])
 
     @measure_run_time
     def _construct_constraints(self):

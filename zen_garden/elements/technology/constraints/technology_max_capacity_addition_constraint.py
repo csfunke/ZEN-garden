@@ -5,12 +5,23 @@ from zen_garden.model.component_types.constraint import GenericConstraint
 
 
 class TechnologyMaxCapacityAdditionConstraint(GenericConstraint):
-    masks = {
-        "constraint_technology_max_capacity_addition": [CapacityAdditionEligibleMask]
-    }
+    name = "constraint_technology_max_capacity_addition"
+    indices = (
+        "set_technologies",
+        "set_capacity_types",
+        "set_location",
+        "set_years",
+    )
+    masks = (CapacityAdditionEligibleMask,)
 
     @classmethod
-    def build(cls, model_constructor):
+    def should_construct(cls, model_constructor):
+        maximum = model_constructor.optimization_model.parameters.capacity_addition_max
+        mask = (maximum != np.inf) & (maximum != 0) & maximum.notnull()
+        return bool(mask.any().item())
+
+    @classmethod
+    def get_constraint(cls, model_constructor):
         """Summary:
         Max capacity addition of technology.
 
@@ -39,9 +50,6 @@ class TechnologyMaxCapacityAdditionConstraint(GenericConstraint):
             & (capacity_addition_max.notnull())
         )
 
-        # if mask is empty, return None
-        if not mask.any():
-            return None
         lhs = mask * (
             capacity_addition_max
             * model_constructor.optimization_model.variables["technology_installation"]
@@ -50,8 +58,4 @@ class TechnologyMaxCapacityAdditionConstraint(GenericConstraint):
         rhs = 0
         constraints = lhs >= rhs
 
-        cls.add_constraint(
-            model_constructor,
-            "constraint_technology_max_capacity_addition",
-            constraints,
-        )
+        return constraints

@@ -26,3 +26,10 @@ class TechOnVar(GenericVariable):
     @classmethod
     def get_bounds(cls, model_constructor, index_sets):
         return None
+
+    @classmethod
+    def should_construct(cls, model_constructor):
+        technologies = model_constructor.optimization_model.create_custom_set(
+            ["set_technologies", "set_on_off"]
+        )[0]
+        return len(technologies) > 0

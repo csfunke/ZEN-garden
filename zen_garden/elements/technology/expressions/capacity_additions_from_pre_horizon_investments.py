@@ -1,0 +1,39 @@
+"""Capacity commissioned from investments made before the model horizon."""
+
+from zen_garden.elements.technology.construction_time import (
+    get_investment_time_mapping,
+)
+from zen_garden.model.component_types.expression import GenericExpression
+
+
+class CapacityAdditionsFromPreHorizonInvestments(GenericExpression):
+    """Map pre-horizon investments to their modeled commissioning years."""
+
+    name = "capacity_additions_from_pre_horizon_investments"
+    indices = (
+        "set_technologies",
+        "set_capacity_types",
+        "set_location",
+        "set_years",
+    )
+    units = "power or energy according to set_capacity_types"
+
+    @classmethod
+    def get_expression(cls, model_constructor):
+        optimization_model = model_constructor.optimization_model
+        addition = optimization_model.variables["capacity_addition"]
+        mapping = get_investment_time_mapping(model_constructor)
+        investment_years = mapping.index.get_level_values("set_time_steps_construction")
+        existing = mapping[
+            investment_years.isin(optimization_model.sets["set_years_entire_horizon"])
+            & ~investment_years.isin(optimization_model.sets["set_years"])
+        ]
+        parameter = optimization_model.parameters.capacity_investment_existing.rename(
+            {"set_years_entire_horizon": "set_time_steps_construction"}
+        )
+        existing = existing.to_xarray().broadcast_like(parameter).fillna(0)
+        existing = existing.transpose(*addition.dims, "set_time_steps_construction")
+        result = (existing * parameter.broadcast_like(existing)).sum(
+            "set_time_steps_construction"
+        )
+        return result.transpose(*addition.dims)

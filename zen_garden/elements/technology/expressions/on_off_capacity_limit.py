@@ -1,0 +1,38 @@
+"""Finite Big-M capacity limit for technology on/off constraints."""
+
+import numpy as np
+
+from zen_garden.model.component_types.expression import GenericExpression
+
+
+class OnOffCapacityLimit(GenericExpression):
+    """Return and validate capacity upper bounds used by on/off linearization."""
+
+    name = "on_off_capacity_limit"
+    indices = ("set_technologies", "set_location", "set_years")
+    units = "power"
+
+    @classmethod
+    def should_construct(cls, model_constructor):
+        technologies = model_constructor.optimization_model.create_custom_set(
+            ["set_technologies", "set_on_off"]
+        )[0]
+        return len(technologies) > 0
+
+    @classmethod
+    def get_expression(cls, model_constructor):
+        optimization_model = model_constructor.optimization_model
+        capacity_limit = (
+            optimization_model.variables["capacity"]
+            .sel(set_capacity_types="power")
+            .upper
+        )
+        binary_mask = optimization_model.variables["tech_on_var"].mask
+        infinite = (capacity_limit.where(binary_mask) == np.inf).to_series()
+        invalid = infinite[infinite].index.droplevel(2).unique().to_list()
+        if infinite.any():
+            raise ValueError(
+                f"On/off capacity limit is infinite for {invalid}. Configure finite "
+                "capacity limits for these technologies."
+            )
+        return capacity_limit

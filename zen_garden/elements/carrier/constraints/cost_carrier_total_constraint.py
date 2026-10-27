@@ -2,8 +2,11 @@ from zen_garden.model.component_types.constraint import GenericConstraint
 
 
 class CostCarrierTotalConstraint(GenericConstraint):
+    name = "constraint_cost_carrier_total"
+    indices = ("set_years",)
+
     @classmethod
-    def build(cls, model_constructor):
+    def get_constraint(cls, model_constructor):
         """Summary:
         Total cost of importing and exporting carrier.
 
@@ -23,23 +26,8 @@ class CostCarrierTotalConstraint(GenericConstraint):
         :math:`y`
         :math:`\\Delta t_t`: duration of time step :math:`t`
         """
-        weight = (
-            model_constructor.optimization_model.parameters.weight_representative_hours
-        )
-        term_summed_cost_carrier = (
-            (
-                model_constructor.optimization_model.variables["cost_carrier"]
-                + model_constructor.optimization_model.variables["cost_shed_demand"]
-            )
-            * weight
-        ).sum(["set_carriers", "set_nodes", "set_representative_hours"])
-        lhs = (
-            model_constructor.optimization_model.variables["cost_carrier_total"]
-            - term_summed_cost_carrier
-        )
-        rhs = 0
-        constraints = lhs == rhs
-
-        model_constructor.optimization_model.add_constraint(
-            "constraint_cost_carrier_total", constraints
+        model = model_constructor.optimization_model
+        return (
+            model.variables["cost_carrier_total"]
+            == model.expressions["annual_carrier_cost"]
         )

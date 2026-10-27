@@ -1,0 +1,35 @@
+"""Investment decisions whose commissioning occurs after the horizon."""
+
+from zen_garden.elements.technology.construction_time import (
+    get_investment_time_mapping,
+)
+from zen_garden.model.component_types.expression import GenericExpression
+from zen_garden.model.linear_expression import align_and_mask
+
+
+class InvestmentsBeyondHorizon(GenericExpression):
+    """Select investments that cannot commission inside the modeled horizon."""
+
+    name = "investments_beyond_horizon"
+    indices = (
+        "set_technologies",
+        "set_capacity_types",
+        "set_location",
+        "set_time_steps_construction",
+    )
+    units = "power or energy according to set_capacity_types"
+
+    @classmethod
+    def get_expression(cls, model_constructor):
+        optimization_model = model_constructor.optimization_model
+        investment = optimization_model.variables["capacity_investment"]
+        mapping = get_investment_time_mapping(model_constructor)
+        current = mapping[
+            mapping.index.get_level_values("set_time_steps_construction").isin(
+                optimization_model.sets["set_years"]
+            )
+        ]
+        current = current.to_xarray().broadcast_like(investment.mask).fillna(0)
+        outside = (1 - current).min("set_years")
+        renamed = investment.rename({"set_years": "set_time_steps_construction"})
+        return align_and_mask(renamed, outside)

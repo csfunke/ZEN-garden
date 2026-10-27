@@ -2,8 +2,11 @@ from zen_garden.model.component_types.constraint import GenericConstraint
 
 
 class CarbonEmissionsCarrierTotalConstraint(GenericConstraint):
+    name = "constraint_carbon_emissions_carrier_total"
+    indices = ("set_years",)
+
     @classmethod
-    def build(cls, model_constructor):
+    def get_constraint(cls, model_constructor):
         """Summary:
         Total carbon emissions of importing and exporting carrier.
 
@@ -21,22 +24,8 @@ class CarbonEmissionsCarrierTotalConstraint(GenericConstraint):
         of year :math:`y`
         :math:`\\Delta t_t`: duration of time step :math:`t`
         """
-        weights = (
-            model_constructor.optimization_model.parameters.weight_representative_hours
-        )
-        term_summed_carbon_emissions_carrier = (
-            model_constructor.optimization_model.variables["carbon_emissions_carrier"]
-            * weights
-        ).sum(["set_carriers", "set_nodes", "set_representative_hours"])
-        lhs = (
-            model_constructor.optimization_model.variables[
-                "carbon_emissions_carrier_total"
-            ]
-            - term_summed_carbon_emissions_carrier
-        )
-        rhs = 0
-        constraints = lhs == rhs
-
-        model_constructor.optimization_model.add_constraint(
-            "constraint_carbon_emissions_carrier_total", constraints
+        model = model_constructor.optimization_model
+        return (
+            model.variables["carbon_emissions_carrier_total"]
+            == model.expressions["annual_import_export_emissions"]
         )

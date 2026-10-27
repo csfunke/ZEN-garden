@@ -6,10 +6,23 @@ from zen_garden.model.component_types.constraint import GenericConstraint
 
 
 class MinimumFullLoadHoursConstraint(GenericConstraint):
-    masks = {"constraint_minimum_full_load_hours": [PowerCapacityYearMask]}
+    name = "constraint_minimum_full_load_hours"
+    indices = (
+        "set_conversion_technologies",
+        "set_nodes",
+        "set_years",
+        "set_capacity_types",
+    )
+    masks = (PowerCapacityYearMask,)
 
     @classmethod
-    def build(cls, model_constructor):
+    def should_construct(cls, model_constructor):
+        return bool(
+            model_constructor.optimization_model.sets["set_conversion_technologies"]
+        )
+
+    @classmethod
+    def get_constraint(cls, model_constructor):
         """Summary:
         Sets minimum full load hours for each unit.
 
@@ -49,8 +62,6 @@ class MinimumFullLoadHoursConstraint(GenericConstraint):
         """
         # get dimensions
         techs = model_constructor.optimization_model.sets["set_conversion_technologies"]
-        if len(techs) == 0:
-            return
         nodes = model_constructor.optimization_model.sets["set_nodes"]
         # define mask
         min_full_load_hours_fraction = (
@@ -84,7 +95,9 @@ class MinimumFullLoadHoursConstraint(GenericConstraint):
             model_constructor.optimization_model.parameters.weight_representative_hours
         )
         term_annual_production = (
-            cls.get_flow_expression_conversion(model_constructor, techs, nodes)
+            model_constructor.optimization_model.expressions[
+                "conversion_reference_flow"
+            ]
             * weights
         ).sum("set_representative_hours")
 
@@ -92,6 +105,4 @@ class MinimumFullLoadHoursConstraint(GenericConstraint):
         rhs = 0
         constraints = lhs >= rhs
 
-        cls.add_constraint(
-            model_constructor, "constraint_minimum_full_load_hours", constraints
-        )
+        return constraints

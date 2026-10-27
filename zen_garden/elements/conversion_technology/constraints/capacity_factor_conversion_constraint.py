@@ -3,10 +3,23 @@ from zen_garden.model.component_types.constraint import GenericConstraint
 
 
 class CapacityFactorConversionConstraint(GenericConstraint):
-    masks = {"constraint_capacity_factor_conversion": [PowerOperationMask]}
+    name = "constraint_capacity_factor_conversion"
+    indices = (
+        "set_conversion_technologies",
+        "set_nodes",
+        "set_years",
+        "set_representative_hours",
+    )
+    masks = (PowerOperationMask,)
 
     @classmethod
-    def build(cls, model_constructor):
+    def should_construct(cls, model_constructor):
+        return bool(
+            model_constructor.optimization_model.sets["set_conversion_technologies"]
+        )
+
+    @classmethod
+    def get_constraint(cls, model_constructor):
         """Summary:
         Load is limited by the installed capacity and the maximum load factor.
 
@@ -28,8 +41,6 @@ class CapacityFactorConversionConstraint(GenericConstraint):
         :math:`y`
         """
         techs = model_constructor.optimization_model.sets["set_conversion_technologies"]
-        if len(techs) == 0:
-            return
         nodes = model_constructor.optimization_model.sets["set_nodes"]
         term_capacity = (
             model_constructor.optimization_model.parameters.max_load.loc[
@@ -44,13 +55,11 @@ class CapacityFactorConversionConstraint(GenericConstraint):
                 "set_location": "set_nodes",
             }
         )
-        term_reference_flow = cls.get_flow_expression_conversion(
-            model_constructor, techs, nodes
-        )
+        term_reference_flow = model_constructor.optimization_model.expressions[
+            "conversion_reference_flow"
+        ]
         lhs = term_capacity - term_reference_flow
         rhs = 0
         constraints = lhs >= rhs
 
-        cls.add_constraint(
-            model_constructor, "constraint_capacity_factor_conversion", constraints
-        )
+        return constraints

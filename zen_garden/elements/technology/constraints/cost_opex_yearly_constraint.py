@@ -3,10 +3,12 @@ from zen_garden.model.component_types.constraint import GenericConstraint
 
 
 class CostOpexYearlyConstraint(GenericConstraint):
-    masks = {"constraint_cost_opex_yearly": [CapacityAnyTypeMask]}
+    name = "constraint_cost_opex_yearly"
+    indices = ("set_technologies", "set_location", "set_years")
+    masks = (CapacityAnyTypeMask,)
 
     @classmethod
-    def build(cls, model_constructor):
+    def get_constraint(cls, model_constructor):
         """Summary:
         Yearly opex for a technology at a location in each year.
 
@@ -34,24 +36,8 @@ class CostOpexYearlyConstraint(GenericConstraint):
         :math:`K_{h,p,y}`: installed capacity of technology :math:`h` at location
         :math:`p` in year :math:`y`
         """
-        optimization_model = model_constructor.optimization_model
-        term_opex_variable = (
-            optimization_model.variables["cost_opex_variable"]
-            * optimization_model.parameters.weight_representative_hours
-        ).sum("set_representative_hours")
-        term_opex_fixed = (
-            optimization_model.parameters.opex_specific_fixed
-            * optimization_model.variables["capacity"]
-        ).sum("set_capacity_types")
-        lhs = (
-            optimization_model.variables["cost_opex_yearly"]
-            - term_opex_variable
-            - term_opex_fixed
-        )
-        rhs = 0
-        constraints = lhs == rhs
-
-        ### return
-        cls.add_constraint(
-            model_constructor, "constraint_cost_opex_yearly", constraints
+        model = model_constructor.optimization_model
+        return model.variables["cost_opex_yearly"] == (
+            model.expressions["annual_variable_opex"]
+            + model.expressions["annual_fixed_opex"]
         )

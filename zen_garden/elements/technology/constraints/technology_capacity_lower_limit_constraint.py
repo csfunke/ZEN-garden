@@ -3,10 +3,17 @@ from zen_garden.model.component_types.constraint import GenericConstraint
 
 
 class TechnologyCapacityLowerLimitConstraint(GenericConstraint):
-    masks = {"constraint_technology_capacity_lower_limit": [CapacityAvailableMask]}
+    name = "constraint_technology_capacity_lower_limit"
+    indices = (
+        "set_technologies",
+        "set_capacity_types",
+        "set_location",
+        "set_years",
+    )
+    masks = (CapacityAvailableMask,)
 
     @classmethod
-    def build(cls, model_constructor):
+    def get_constraint(cls, model_constructor):
         """Summary:
         Constrain installed capacity by each positive lower limit.
 
@@ -44,6 +51,4 @@ class TechnologyCapacityLowerLimitConstraint(GenericConstraint):
         constraint = lhs >= rhs
 
         # Add the constraint to the model
-        cls.add_constraint(
-            model_constructor, "constraint_technology_capacity_lower_limit", constraint
-        )
+        return constraint

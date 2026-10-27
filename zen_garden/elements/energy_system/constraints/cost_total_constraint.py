@@ -2,8 +2,11 @@ from zen_garden.model.component_types.constraint import GenericConstraint
 
 
 class CostTotalConstraint(GenericConstraint):
+    name = "constraint_cost_total"
+    indices = ("set_years",)
+
     @classmethod
-    def build(cls, model_constructor):
+    def get_constraint(cls, model_constructor):
         """Summary:
         Add up all costs from technologies and carriers.
 
@@ -36,6 +39,4 @@ class CostTotalConstraint(GenericConstraint):
         rhs = 0
         constraints = lhs == rhs
 
-        model_constructor.optimization_model.add_constraint(
-            "constraint_cost_total", constraints
-        )
+        return constraints

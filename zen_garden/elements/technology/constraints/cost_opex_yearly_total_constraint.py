@@ -2,8 +2,11 @@ from zen_garden.model.component_types.constraint import GenericConstraint
 
 
 class CostOpexYearlyTotalConstraint(GenericConstraint):
+    name = "constraint_cost_opex_yearly_total"
+    indices = ("set_years",)
+
     @classmethod
-    def build(cls, model_constructor):
+    def get_constraint(cls, model_constructor):
         """Summary:
         Sums over all technologies to calculate total opex.
 
@@ -26,6 +29,4 @@ class CostOpexYearlyTotalConstraint(GenericConstraint):
         rhs = 0
         constraints = lhs == rhs
 
-        model_constructor.optimization_model.add_constraint(
-            "constraint_cost_opex_yearly_total", constraints
-        )
+        return constraints

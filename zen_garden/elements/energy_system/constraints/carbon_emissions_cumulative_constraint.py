@@ -4,8 +4,11 @@ from zen_garden.model.component_types.constraint import GenericConstraint
 
 
 class CarbonEmissionsCumulativeConstraint(GenericConstraint):
+    name = "constraint_carbon_emissions_cumulative"
+    indices = ("set_years",)
+
     @classmethod
-    def build(cls, model_constructor):
+    def get_constraint(cls, model_constructor):
         """Summary:
         Cumulative carbon emissions over time.
 
@@ -30,19 +33,9 @@ class CarbonEmissionsCumulativeConstraint(GenericConstraint):
             for year in model_constructor.model_schema.set_years
         ]
 
-        lhs = (
-            model_constructor.optimization_model.variables[
-                "carbon_emissions_cumulative"
-            ]
-            - model_constructor.optimization_model.variables[
-                "carbon_emissions_cumulative"
-            ].shift(set_years=1)
-            - model_constructor.optimization_model.variables[
-                "carbon_emissions_annual"
-            ].shift(set_years=1)
-            * (model_constructor.config.system.interval_between_years - 1)
-            - model_constructor.optimization_model.variables["carbon_emissions_annual"]
-        )
+        lhs = model_constructor.optimization_model.expressions[
+            "cumulative_emissions_change"
+        ]
         cumulative_existing = (
             model_constructor.optimization_model.parameters.carbon_emissions_cumulative_existing
         )
@@ -56,6 +49,4 @@ class CarbonEmissionsCumulativeConstraint(GenericConstraint):
         ).where(m, 0)
         constraints = lhs == rhs
 
-        model_constructor.optimization_model.add_constraint(
-            "constraint_carbon_emissions_cumulative", constraints
-        )
+        return constraints

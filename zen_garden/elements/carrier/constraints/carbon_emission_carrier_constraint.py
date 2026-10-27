@@ -2,8 +2,16 @@ from zen_garden.model.component_types.constraint import GenericConstraint
 
 
 class CarbonEmissionsCarrierConstraint(GenericConstraint):
+    name = "constraint_carbon_emissions_carrier"
+    indices = (
+        "set_carriers",
+        "set_nodes",
+        "set_years",
+        "set_representative_hours",
+    )
+
     @classmethod
-    def build(cls, model_constructor):
+    def get_constraint(cls, model_constructor):
         """Summary:
         Carbon emissions of importing and exporting carrier.
 
@@ -47,6 +55,4 @@ class CarbonEmissionsCarrierConstraint(GenericConstraint):
 
         constraints = lhs == rhs
 
-        model_constructor.optimization_model.add_constraint(
-            "constraint_carbon_emissions_carrier", constraints
-        )
+        return constraints

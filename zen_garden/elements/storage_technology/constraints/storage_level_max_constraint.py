@@ -3,10 +3,23 @@ from zen_garden.model.component_types.constraint import GenericConstraint
 
 
 class StorageLevelMaxConstraint(GenericConstraint):
-    masks = {"constraint_storage_level_max": [StorageStateMask]}
+    name = "constraint_storage_level_max"
+    indices = (
+        "set_storage_technologies",
+        "set_nodes",
+        "set_years",
+        "set_representative_hours_storage",
+    )
+    masks = (StorageStateMask,)
 
     @classmethod
-    def build(cls, model_constructor):
+    def should_construct(cls, model_constructor):
+        return bool(
+            model_constructor.optimization_model.sets["set_storage_technologies"]
+        )
+
+    @classmethod
+    def get_constraint(cls, model_constructor):
         """Summary:
         Limit maximum storage level to capacity.
 
@@ -25,8 +38,6 @@ class StorageLevelMaxConstraint(GenericConstraint):
         """
         techs = model_constructor.optimization_model.sets["set_storage_technologies"]
         nodes = model_constructor.optimization_model.sets["set_nodes"]
-        if len(techs) == 0:
-            return
         capacity = model_constructor.optimization_model.variables["capacity"].rename(
             {
                 "set_technologies": "set_storage_technologies",
@@ -45,6 +56,4 @@ class StorageLevelMaxConstraint(GenericConstraint):
         rhs = 0
         constraints = lhs <= rhs
 
-        cls.add_constraint(
-            model_constructor, "constraint_storage_level_max", constraints
-        )
+        return constraints

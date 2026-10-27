@@ -9,6 +9,8 @@ class TotalCost(GenericExpression):
     """
 
     name = "total_cost"
+    indices = ()
+    units = "currency"
     doc = "Total net present cost, summed over all modeled years"
 
     @classmethod

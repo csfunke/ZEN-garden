@@ -1,0 +1,61 @@
+"""Annualized CAPEX attributable to modeled investments."""
+
+import itertools
+
+import pandas as pd
+
+from zen_garden.elements.technology.lifetime import get_active_vintage_years
+from zen_garden.model.component_types.expression import GenericExpression
+from zen_garden.model.linear_expression import transpose_linear_expression
+
+
+class AnnualizedCapexFromNewInvestments(GenericExpression):
+    """Annualize active overnight-CAPEX vintages."""
+
+    name = "annualized_capex_from_new_investments"
+    indices = (
+        "set_technologies",
+        "set_capacity_types",
+        "set_location",
+        "set_years",
+    )
+    units = "currency per year"
+
+    @classmethod
+    def get_expression(cls, model_constructor):
+        optimization_model = model_constructor.optimization_model
+        yearly_capex = optimization_model.variables["cost_capex_yearly"]
+        discount_rate = optimization_model.parameters.discount_rate
+        depreciation_time = optimization_model.parameters.depreciation_time
+        annuity = (
+            ((1 + discount_rate) ** depreciation_time * discount_rate)
+            / ((1 + discount_rate) ** depreciation_time - 1)
+            if discount_rate != 0
+            else 1 / depreciation_time
+        )
+        vintages = pd.MultiIndex.from_tuples(
+            [
+                (technology, year, vintage)
+                for technology, year in itertools.product(
+                    optimization_model.sets["set_technologies"],
+                    optimization_model.sets["set_years"],
+                )
+                for vintage in get_active_vintage_years(
+                    model_constructor,
+                    technology,
+                    year,
+                    use_depreciation_time=True,
+                )
+            ],
+            names=["set_technologies", "set_years", "set_years_prev"],
+        )
+        active = pd.Series(1, index=vintages).to_xarray()
+        active = active.broadcast_like(yearly_capex.lower).fillna(0)
+        active = active.transpose(*yearly_capex.dims, "set_years_prev")
+        capex = optimization_model.variables["cost_capex_overnight"].rename(
+            {"set_years": "set_years_prev"}
+        )
+        capex = transpose_linear_expression(
+            1 * capex.broadcast_like(active), active.dims
+        )
+        return (active * annuity * capex).sum("set_years_prev")

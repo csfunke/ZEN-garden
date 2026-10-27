@@ -1,0 +1,50 @@
+"""Net energy entering storage during a storage time step."""
+
+from zen_garden.elements.storage_technology.storage_time import (
+    get_previous_storage_time_step_arrays,
+    get_storage_to_operation_mapping,
+)
+from zen_garden.model.component_types.expression import GenericExpression
+from zen_garden.model.linear_expression import map_and_expand
+
+
+class StorageNetEnergyInflow(GenericExpression):
+    """Combine charge, discharge, inflow, spillage, and standing-loss duration."""
+
+    name = "storage_net_energy_inflow"
+    indices = (
+        "set_storage_technologies",
+        "set_nodes",
+        "set_years",
+        "set_representative_hours_storage",
+    )
+    units = "energy"
+
+    @classmethod
+    def should_construct(cls, model_constructor):
+        return bool(
+            model_constructor.optimization_model.sets["set_storage_technologies"]
+        )
+
+    @classmethod
+    def get_expression(cls, model_constructor):
+        optimization_model = model_constructor.optimization_model
+        self_discharge = optimization_model.parameters.self_discharge
+        duration = optimization_model.parameters.duration_representative_hours_storage
+        with_discharge = (1 - (1 - self_discharge) ** duration) / self_discharge
+        multiplier = with_discharge.where(self_discharge != 0, 0.0) + duration.where(
+            self_discharge == 0, 0.0
+        )
+        net_flow = (
+            optimization_model.variables["flow_storage_charge"]
+            * optimization_model.parameters.efficiency_charge
+            - optimization_model.variables["flow_storage_discharge"].to_linexpr()
+            / optimization_model.parameters.efficiency_discharge
+            + optimization_model.parameters.flow_storage_inflow
+            - optimization_model.variables["flow_storage_spillage"]
+        )
+        mapped = map_and_expand(
+            net_flow, get_storage_to_operation_mapping(model_constructor)
+        )
+        _, _, coupling_mask = get_previous_storage_time_step_arrays(model_constructor)
+        return (mapped * multiplier).where(coupling_mask, 0.0)

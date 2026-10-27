@@ -3,10 +3,23 @@ from zen_garden.model.component_types.constraint import GenericConstraint
 
 
 class CapacityFactorStorageConstraint(GenericConstraint):
-    masks = {"constraint_capacity_factor_storage": [PowerOperationMask]}
+    name = "constraint_capacity_factor_storage"
+    indices = (
+        "set_storage_technologies",
+        "set_nodes",
+        "set_years",
+        "set_representative_hours",
+    )
+    masks = (PowerOperationMask,)
 
     @classmethod
-    def build(cls, model_constructor):
+    def should_construct(cls, model_constructor):
+        return bool(
+            model_constructor.optimization_model.sets["set_storage_technologies"]
+        )
+
+    @classmethod
+    def get_constraint(cls, model_constructor):
         """Summary:
         Limits load of storage technologies by capacity and maximum load factor.
 
@@ -28,8 +41,6 @@ class CapacityFactorStorageConstraint(GenericConstraint):
         node :math:`n` in year :math:`y`
         """
         techs = model_constructor.optimization_model.sets["set_storage_technologies"]
-        if len(techs) == 0:
-            return
         nodes = model_constructor.optimization_model.sets["set_nodes"]
         term_capacity = (
             model_constructor.optimization_model.parameters.max_load.loc[
@@ -45,13 +56,14 @@ class CapacityFactorStorageConstraint(GenericConstraint):
             }
         )
 
-        # TODO integrate level storage here as well
-        lhs = term_capacity - cls.get_flow_expression_storage(
-            model_constructor, rename=False
+        throughput = model_constructor.optimization_model.expressions[
+            "storage_throughput"
+        ].rename(
+            set_technologies="set_storage_technologies",
+            set_location="set_nodes",
         )
+        lhs = term_capacity - throughput
         rhs = 0
         constraints = lhs >= rhs
         ### return
-        cls.add_constraint(
-            model_constructor, "constraint_capacity_factor_storage", constraints
-        )
+        return constraints

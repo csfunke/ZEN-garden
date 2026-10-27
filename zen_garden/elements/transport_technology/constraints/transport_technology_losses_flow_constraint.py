@@ -9,15 +9,23 @@ from zen_garden.model.component_types.constraint import GenericConstraint
 
 
 class TransportTechnologyLossesFlowConstraint(GenericConstraint):
-    masks = {
-        "constraint_transport_technology_losses_flow": [
-            PowerOperationMask,
-            FiniteTransportRouteMask,
-        ]
-    }
+    name = "constraint_transport_technology_losses_flow"
+    indices = (
+        "set_transport_technologies",
+        "set_edges",
+        "set_years",
+        "set_representative_hours",
+    )
+    masks = (PowerOperationMask, FiniteTransportRouteMask)
 
     @classmethod
-    def build(cls, model_constructor):
+    def should_construct(cls, model_constructor):
+        return bool(
+            model_constructor.optimization_model.sets["set_transport_technologies"]
+        )
+
+    @classmethod
+    def get_constraint(cls, model_constructor):
         """Summary:
         Compute the flow losses for a carrier through a transport technology.
 
@@ -52,8 +60,6 @@ class TransportTechnologyLossesFlowConstraint(GenericConstraint):
         technology :math:`h` on edge :math:`e` in time step :math:`t` of year :math:`y`
         """
         optimization_model = model_constructor.optimization_model
-        if len(optimization_model.sets["set_transport_technologies"]) == 0:
-            return
         flow_transport = optimization_model.variables["flow_transport"]
         flow_transport_loss = optimization_model.variables["flow_transport_loss"]
         # This mask checks the distance between nodes
@@ -71,8 +77,4 @@ class TransportTechnologyLossesFlowConstraint(GenericConstraint):
         rhs = 0
         constraints = lhs == rhs
 
-        cls.add_constraint(
-            model_constructor,
-            "constraint_transport_technology_losses_flow",
-            constraints,
-        )
+        return constraints
