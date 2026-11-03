@@ -21,7 +21,7 @@ class TechOnVar(GenericVariable):
         "location p and operational time step t, else 0."
     )
     unit_category = {}
-    binary = True
+    variable_type = "binary"
     masks = [PowerOperationMask, OnOffTechnologyMask]
 
     @classmethod

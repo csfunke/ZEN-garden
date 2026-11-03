@@ -4,15 +4,10 @@ from zen_garden.model.component_types.expression import GenericExpression
 
 
 class StorageOvernightCapex(GenericExpression):
-    """Multiply storage power and energy additions by their specific CAPEX."""
+    """Multiply storage power additions by their specific CAPEX."""
 
     name = "storage_overnight_capex"
-    indices = (
-        "set_technologies",
-        "set_capacity_types",
-        "set_location",
-        "set_years",
-    )
+    indices = ("set_technologies", "set_location", "set_years")
 
     @classmethod
     def should_construct(cls, model_constructor):

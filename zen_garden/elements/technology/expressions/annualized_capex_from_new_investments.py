@@ -13,12 +13,7 @@ class AnnualizedCapexFromNewInvestments(GenericExpression):
     """Annualize active overnight-CAPEX vintages."""
 
     name = "annualized_capex_from_new_investments"
-    indices = (
-        "set_technologies",
-        "set_capacity_types",
-        "set_location",
-        "set_years",
-    )
+    indices = ("set_technologies", "set_location", "set_years")
 
     @classmethod
     def get_expression(cls, model_constructor):

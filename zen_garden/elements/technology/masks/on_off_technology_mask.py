@@ -7,9 +7,15 @@ class OnOffTechnologyMask(GenericMask):
     """Technology-location-time tuples configured for on/off operation."""
 
     name = "on_off_technology"
+    indices = (
+        "set_technologies",
+        "set_location",
+        "set_years",
+        "set_representative_hours",
+    )
 
     @classmethod
-    def build(cls, model_constructor, registry):
+    def get_mask(cls, model_constructor, registry):
         index_values, index_names = model_constructor.create_custom_set(
             [
                 "set_technologies",

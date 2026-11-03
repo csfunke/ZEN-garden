@@ -13,10 +13,11 @@ class ModeledCapexMask(GenericMask):
     """Modeled overnight CAPEX still inside its depreciation period."""
 
     name = "modeled_capex"
-    dependencies = [CapacityAdditionEligibleMask]
+    indices = ("set_technologies", "set_location", "set_years")
+    dependencies = (CapacityAdditionEligibleMask,)
 
     @classmethod
-    def build(cls, model_constructor, registry):
+    def get_mask(cls, model_constructor, registry):
         additions = registry[CapacityAdditionEligibleMask]
         capex = xr.zeros_like(additions, dtype=bool)
         years = list(model_constructor.optimization_model.sets["set_years"])
@@ -26,7 +27,7 @@ class ModeledCapexMask(GenericMask):
                 previous_years = active_previous_years(
                     model_constructor, technology, year, "depreciation_time"
                 )
-                capex.loc[technology, :, :, year] = additions.sel(
+                capex.loc[technology, :, year] = additions.sel(
                     set_technologies=technology,
                     set_years=previous_years,
                 ).any("set_years")

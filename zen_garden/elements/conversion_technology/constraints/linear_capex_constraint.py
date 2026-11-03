@@ -41,7 +41,6 @@ class LinearCapexConstraint(GenericConstraint):
         nodes = model.sets["set_nodes"]
         cost = model.variables["cost_capex_overnight"].sel(
             set_technologies=technologies,
-            set_capacity_types="power",
             set_location=nodes,
         )
         specific = model.parameters.capex_specific_conversion.rename(

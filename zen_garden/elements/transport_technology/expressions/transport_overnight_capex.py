@@ -49,12 +49,10 @@ class TransportOvernightCapex(GenericExpression):
         edges = model.sets["set_edges"]
         addition = model.variables["capacity_addition"].sel(
             set_technologies=technologies,
-            set_capacity_types="power",
             set_location=edges,
         )
         installation = model.variables["technology_installation"].sel(
             set_technologies=technologies,
-            set_capacity_types="power",
             set_location=edges,
         )
         fixed = model.parameters.capex_specific_transport.rename(

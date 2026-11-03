@@ -13,10 +13,11 @@ class PotentialNewCapacityMask(GenericMask):
     """Capacity that may be supplied by a surviving modeled addition."""
 
     name = "potential_new_capacity"
-    dependencies = [CapacityAdditionEligibleMask]
+    indices = ("set_technologies", "set_location", "set_years")
+    dependencies = (CapacityAdditionEligibleMask,)
 
     @classmethod
-    def build(cls, model_constructor, registry):
+    def get_mask(cls, model_constructor, registry):
         additions = registry[CapacityAdditionEligibleMask]
         capacity = xr.zeros_like(additions, dtype=bool)
         years = list(model_constructor.optimization_model.sets["set_years"])
@@ -26,7 +27,7 @@ class PotentialNewCapacityMask(GenericMask):
                 previous_years = active_previous_years(
                     model_constructor, technology, year, "lifetime"
                 )
-                capacity.loc[technology, :, :, year] = additions.sel(
+                capacity.loc[technology, :, year] = additions.sel(
                     set_technologies=technology,
                     set_years=previous_years,
                 ).any("set_years")

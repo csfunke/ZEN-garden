@@ -47,5 +47,5 @@ class TechnologyOnOffCapacityHelperUpperBoundConstraint(GenericConstraint):
         """
         model = model_constructor.optimization_model
         helper = model.variables["capacity_on_off_helper_var"]
-        capacity = model.variables["capacity"].sel(set_capacity_types="power")
+        capacity = model.variables["capacity"]
         return align_and_mask(helper - capacity, helper.mask) <= 0

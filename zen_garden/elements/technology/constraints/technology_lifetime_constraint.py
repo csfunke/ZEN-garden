@@ -12,12 +12,7 @@ class TechnologyLifetimeConstraint(GenericConstraint):
     """Define end-of-year capacity from existing and surviving vintages."""
 
     name = "constraint_technology_lifetime"
-    indices = (
-        "set_technologies",
-        "set_capacity_types",
-        "set_location",
-        "set_years",
-    )
+    indices = ("set_technologies", "set_location", "set_years")
     masks = (CapacityAvailableMask,)
 
     @classmethod

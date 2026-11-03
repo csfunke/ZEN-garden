@@ -21,14 +21,6 @@ class GenericIndex:
                 )
 
 
-class SetCapacityTypes(GenericIndex):
-    """Capacity categories used when constructing technology indices."""
-
-    name = "set_capacity_types"
-    symbol = r"q \in \mathcal{Q}"
-    doc = "Capacity categories, such as power and energy capacity."
-
-
 class SetLocations(GenericIndex):
     """Technology locations selected from nodes or edges."""
 
@@ -63,7 +55,6 @@ class SetStorageTimeSteps(GenericIndex):
 
 
 STRUCTURAL_INDICES: tuple[type[GenericIndex], ...] = (
-    SetCapacityTypes,
     SetLocations,
     SetConstructionTimeSteps,
     SetOperationTimeSteps,

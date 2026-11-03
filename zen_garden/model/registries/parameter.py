@@ -191,7 +191,7 @@ class ParameterRegistry(Registry):
         """
         if isinstance(data, pd.Series):
             # if single entry in index
-            if len(data.index[0]) == 1:
+            if not data.empty and len(data.index[0]) == 1:
                 data.index = pd.Index(sum(data.index.values, ()))
             data = data.to_dict()
         return data
@@ -205,7 +205,7 @@ class ParameterRegistry(Registry):
         """
         if isinstance(data, pd.Series):
             # if single entry in index
-            if len(data.index[0]) == 1:
+            if not data.empty and len(data.index[0]) == 1:
                 data.index = pd.Index(sum(data.index.values, ()))
             if len(data.index.names) == len(index_list):
                 data.index.names = index_list
@@ -224,9 +224,15 @@ class ParameterRegistry(Registry):
             # now we need to align the coords TODO try to speed up
             data, _ = xr.align(data, self.sets.coords_dataset, join="right")
 
-        # sometimes we get empty parameters
+        # Preserve the declared dimensions for empty parameters. A generic
+        # ``DataArray([])`` would introduce an artificial ``dim_0`` that then
+        # propagates into masks and expressions when an element set is empty.
         if isinstance(data, dict) and len(data) == 0:
-            data = xr.DataArray([])
+            data = xr.DataArray(
+                np.empty((0,) * len(index_list)),
+                coords={index: [] for index in index_list},
+                dims=index_list,
+            )
         return data
 
     def __getattr__(self, name) -> xr.DataArray:

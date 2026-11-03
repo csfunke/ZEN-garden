@@ -1,27 +1,48 @@
 from __future__ import annotations
 
 from abc import ABC
-from typing import TYPE_CHECKING, Any, ClassVar
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Any, ClassVar, final
 
 import numpy as np
 import pandas as pd
+import xarray as xr
+
+from zen_garden.model.component_types.component import GenericComponent
+from zen_garden.model.linear_expression import validate_component_indices
 
 if TYPE_CHECKING:
     from zen_garden.model.constructor import ModelConstructor
 
 
-class GenericParameter(ABC):
+@dataclass(frozen=True, slots=True)
+class ParameterInputData:
+    """Values and units loaded for one parameter."""
+
+    values: Any
+    units: Any
+
+
+@dataclass(frozen=True, slots=True)
+class ParameterData:
+    """Final parameter value registered in the optimization model."""
+
+    values: Any
+    indices: tuple[str, ...]
+    units: Any = None
+
+
+class GenericParameter(GenericComponent, ABC):
     """Abstract base class for parameters in ZEN-garden.
 
     Lifecycle:
 
-    * :meth:`store_input_data` runs once during preprocessing and puts the
-      parameter's values onto the elements (usually read from input files).
+    * :meth:`get_input_data` returns values during preprocessing for the
+      framework to store on the elements.
     * :meth:`build` runs during model construction -- once per rolling-horizon
       step -- and registers the parameter on the optimization model. The default
-      reads the values stored by :meth:`store_input_data`; parameters that are
-      *derived* from other model parameters override :meth:`build` instead (and
-      leave :meth:`store_input_data` empty).
+      reads the stored values through :meth:`get_parameter_value`; derived
+      parameters override that hook instead.
     """
 
     name: ClassVar[str]
@@ -30,34 +51,48 @@ class GenericParameter(ABC):
     doc: ClassVar[str]
     unit_category: ClassVar[dict[str, int]]
     time_series: ClassVar[bool] = False
-    capacity_types: ClassVar[bool] = False
     set_time_steps: ClassVar[str | None] = None
     input_name: ClassVar[str | None] = None
     input_indices: ClassVar[tuple[str, ...] | None] = None
     default_value: ClassVar[int | float | str | None] = None
     default_unit: ClassVar[str | None] = None
-    dependencies: ClassVar[list[str]] = []
+    dependencies: ClassVar[tuple[type["GenericParameter"], ...]] = ()
     squeeze_singleton: ClassVar[bool] = True
+    _abstract_component = True
 
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
 
-        if cls.__dict__.get("_abstract_parameter", False):
+        if cls.__dict__.get("_abstract_component", False):
             return
 
-        required = ("name", "symbol", "indices", "doc", "unit_category")
+        required = ("symbol", "indices", "unit_category")
 
         for attr in required:
             if attr not in cls.__dict__:
                 raise TypeError(f"{cls.__name__} must define {attr!r}")
-        for attr in ("name", "symbol", "doc"):
+        for attr in ("symbol",):
             if (
                 not isinstance(getattr(cls, attr), str)
                 or not getattr(cls, attr).strip()
             ):
                 raise TypeError(f"{cls.__name__}.{attr} must be a non-empty string")
-        if not isinstance(cls.dependencies, list):
-            raise TypeError(f"{cls.__name__}.dependencies must be a list")
+        if isinstance(cls.indices, str) or not all(
+            isinstance(index, str) and index for index in cls.indices
+        ):
+            raise TypeError(f"{cls.__name__}.indices must contain non-empty set names")
+        cls.indices = tuple(cls.indices)
+        if not isinstance(cls.unit_category, dict) or not all(
+            isinstance(dimension, str) and isinstance(exponent, int)
+            for dimension, exponent in cls.unit_category.items()
+        ):
+            raise TypeError(
+                f"{cls.__name__}.unit_category must map dimensions to integers"
+            )
+        if "build" in cls.__dict__:
+            raise TypeError(
+                f"{cls.__name__} must not override GenericParameter.build()"
+            )
         if cls.default_value is not None and cls.default_value not in (0, 1, "inf"):
             raise TypeError(
                 f"{cls.__name__}.default_value must be 0, 1, 'inf', or None"
@@ -68,30 +103,33 @@ class GenericParameter(ABC):
             )
 
     @classmethod
+    @final
     def build(cls, model_constructor: "ModelConstructor") -> None:
         """Register this parameter on the optimization model.
 
-        The default registers the values put on the elements by
-        :meth:`store_input_data`. Derived parameters override this to compute
-        their data from other, already-registered model parameters.
+        The default registers the value returned by
+        :meth:`get_parameter_value`.
         """
-        index_names = list(cls.indices)
-        component_data, index_list, units = cls.get_model_data(
-            model_constructor, index_names
-        )
-        component_data = cls._ensure_multi_index(component_data)
+        parameter = cls.get_parameter_value(model_constructor)
+        component_data = cls._ensure_multi_index(parameter.values)
+        if isinstance(component_data, xr.DataArray):
+            validate_component_indices(cls.name, parameter.indices, component_data)
+            registry_data: xr.DataArray | tuple[Any, list[str]] = component_data
+        else:
+            registry_data = (component_data, list(parameter.indices))
         model_constructor.optimization_model.add_parameter(
             cls.name,
             cls.doc,
-            (component_data, index_list),
-            units,
+            registry_data,
+            parameter.units,
         )
 
     @classmethod
-    def get_model_data(
-        cls, model_constructor: "ModelConstructor", index_names: list[str]
-    ):
+    def get_parameter_value(
+        cls, model_constructor: "ModelConstructor"
+    ) -> ParameterData:
         """Collect this parameter's stored values, model indices, and units."""
+        index_names = list(cls.indices)
         if model_constructor.element_class is type(model_constructor.energy_system):
             component_data = getattr(model_constructor.energy_system, cls.name)
             index_list = index_names
@@ -103,14 +141,13 @@ class GenericParameter(ABC):
                 if cls.squeeze_singleton and not isinstance(component_data, float):
                     component_data = component_data.squeeze()
             units = model_constructor.energy_system.units.get(cls.name, {})
-            return component_data, index_list, units
+            return ParameterData(component_data, tuple(index_list), units)
 
         custom_set, index_list = model_constructor.create_custom_set(index_names)
         component_data, units, attribute_is_series = (
             model_constructor.element_registry.get_attribute_of_all_elements_with_units(
                 model_constructor.element_class,
                 cls.name,
-                capacity_types=cls.capacity_types,
             )
         )
         if np.size(custom_set):
@@ -119,7 +156,7 @@ class GenericParameter(ABC):
             else:
                 component_data = pd.Series(component_data)
             component_data = cls._select_model_index(component_data, custom_set)
-        return component_data, index_list, units
+        return ParameterData(component_data, tuple(index_list), units)
 
     @staticmethod
     def _select_model_index(component_data, custom_set):
@@ -162,8 +199,8 @@ class GenericParameter(ABC):
         return component_data
 
     @classmethod
-    def store_input_data(cls, element: Any) -> None:
-        """Load and store a parameter using the standard input layout."""
+    def get_input_data(cls, element: Any) -> ParameterInputData | None:
+        """Return this parameter's values from the input dataset."""
         name = cls.input_name or cls.name
         indices = cls._input_indices(element)
         value = element.element_data_loader.extract_input_data(
@@ -173,23 +210,17 @@ class GenericParameter(ABC):
             parameter_default_value=cls.default_value,
             parameter_default_unit=cls.default_unit,
         )
-        cls._store_value(element, cls.name, value)
+        return ParameterInputData(value, element.units.get(name))
 
-        if cls.capacity_types and cls._has_energy_capacity(element):
-            energy_units = dict(cls.unit_category)
-            energy_units.pop("time", None)
-            energy_value = element.element_data_loader.extract_input_data(
-                f"{name}_energy",
-                index_sets=indices,
-                unit_category=energy_units,
-                parameter_default_value=cls.default_value,
-                parameter_default_unit=(
-                    f"{cls.default_unit}_energy"
-                    if cls.default_unit is not None
-                    else None
-                ),
-            )
-            cls._store_value(element, f"{cls.name}_energy", energy_value)
+    @classmethod
+    def load_input_data(cls, element: Any) -> None:
+        """Store this parameter's returned input data on its owning element."""
+        data = cls.get_input_data(element)
+        if data is None:
+            return
+        cls._store_value(element, cls.name, data.values)
+        if data.units is not None:
+            element.units[cls.name] = data.units
 
     @classmethod
     def _store_value(cls, element: Any, name: str, value: Any) -> None:
@@ -210,11 +241,7 @@ class GenericParameter(ABC):
                 for base in type(element).mro()
                 if "label" in base.__dict__
             }
-            indices = [
-                index
-                for index in cls.indices
-                if index not in owner_labels and index != "set_capacity_types"
-            ]
+            indices = [index for index in cls.indices if index not in owner_labels]
 
         location_type = getattr(element, "location_type", None)
         if "set_location" in indices and location_type is None:
@@ -228,60 +255,3 @@ class GenericParameter(ABC):
             indices.remove("set_years")
             indices.append("set_hours")
         return indices
-
-    @staticmethod
-    def _has_energy_capacity(element: Any) -> bool:
-        return element.name in element.config.system.set_storage_technologies
-
-    @classmethod
-    def construction_order(
-        cls,
-        parameters: list[type[GenericParameter]],
-        *,
-        ignore_missing: bool = False,
-    ) -> list[type[GenericParameter]]:
-        """Return the given parameter specifications in dependency order.
-
-        :param ignore_missing: when ``True``, a dependency on a parameter that is
-            not in ``parameters`` is treated as already satisfied instead of
-            raising. Used when ordering the ``build`` pass for a subset of the
-            model's element types (a filtered-out type's parameters are absent).
-        """
-        parameters_by_name: dict[str, type[GenericParameter]] = {}
-        for parameter in parameters:
-            existing = parameters_by_name.get(parameter.name)
-            if existing is not None and existing is not parameter:
-                raise ValueError(
-                    f"Multiple parameter specifications define {parameter.name!r}: "
-                    f"{existing.__name__} and {parameter.__name__}"
-                )
-            parameters_by_name[parameter.name] = parameter
-
-        all_names = set(parameters_by_name)
-        if not ignore_missing:
-            for parameter in parameters_by_name.values():
-                missing = set(parameter.dependencies).difference(all_names)
-                if missing:
-                    names = ", ".join(sorted(missing))
-                    raise ValueError(
-                        f"Parameter {parameter.name!r} has unknown "
-                        f"dependencies: {names}"
-                    )
-
-        remaining = list(parameters_by_name.values())
-        completed: set[str] = set()
-        ordered: list[type[GenericParameter]] = []
-        while remaining:
-            ready = [
-                parameter
-                for parameter in remaining
-                if (set(parameter.dependencies) & all_names).issubset(completed)
-            ]
-            if not ready:
-                cycle = ", ".join(parameter.name for parameter in remaining)
-                raise ValueError(f"Cyclic parameter dependencies: {cycle}")
-            for parameter in ready:
-                remaining.remove(parameter)
-                ordered.append(parameter)
-                completed.add(parameter.name)
-        return ordered

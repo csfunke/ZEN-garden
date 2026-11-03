@@ -1,4 +1,4 @@
-from zen_garden.model.component_types.parameter import GenericParameter
+from zen_garden.model.component_types.parameter import GenericParameter, ParameterData
 
 
 class ModeledYearHours(GenericParameter):
@@ -11,11 +11,12 @@ class ModeledYearHours(GenericParameter):
     unit_category = {"time": 1}
 
     @classmethod
-    def get_model_data(cls, model_constructor, index_names):
+    def get_parameter_value(cls, model_constructor):
         """Return the configured modeled-year duration as a scalar parameter."""
         value = model_constructor.config.system.unaggregated_time_steps_per_year
-        return value, index_names, {}
+        return ParameterData(value, cls.indices, {})
 
     @classmethod
-    def store_input_data(cls, element):
-        """Skip element input because this value comes from system configuration."""
+    def get_input_data(cls, element):
+        """Return no input because the value comes from configuration."""
+        return None

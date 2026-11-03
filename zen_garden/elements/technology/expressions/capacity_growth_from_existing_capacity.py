@@ -6,12 +6,7 @@ class CapacityGrowthFromExistingCapacity(GenericExpression):
     """Capacity growth supported by depreciated pre-horizon capacity."""
 
     name = "capacity_growth_from_existing_capacity"
-    indices = (
-        "set_technologies",
-        "set_capacity_types",
-        "set_location",
-        "set_years",
-    )
+    indices = ("set_technologies", "set_location", "set_years")
 
     @classmethod
     def get_expression(cls, model_constructor):

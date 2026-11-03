@@ -48,7 +48,6 @@ class TransportCapacityOnUnavailableEdges(GenericExpression):
         edges = model.sets["set_edges"]
         addition = model.variables["capacity_addition"].sel(
             set_technologies=technologies,
-            set_capacity_types="power",
             set_location=edges,
         )
         unavailable = np.isinf(

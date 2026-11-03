@@ -30,11 +30,16 @@ class CostCapexYearlyTotalConstraint(GenericConstraint):
         Returns:
             Constraint over its declared model indices.
         """
-        lhs = model_constructor.optimization_model.variables[
-            "cost_capex_yearly_total"
-        ] - model_constructor.optimization_model.variables["cost_capex_yearly"].sum(
-            ["set_technologies", "set_capacity_types", "set_location"]
+        model = model_constructor.optimization_model
+        power_cost = model.variables["cost_capex_yearly"].sum(
+            ["set_technologies", "set_location"]
         )
+        if not model.sets["set_storage_technologies"]:
+            return model.variables["cost_capex_yearly_total"] - power_cost == 0
+        energy_cost = model.variables["cost_capex_yearly_energy"].sum(
+            ["set_storage_technologies", "set_nodes"]
+        )
+        lhs = model.variables["cost_capex_yearly_total"] - power_cost - energy_cost
         rhs = 0
         constraints = lhs == rhs
 

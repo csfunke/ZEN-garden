@@ -62,15 +62,11 @@ class FlowConversionInput(GenericVariable):
 
                 capacity = optimization_model.variables["capacity"]
                 lower.loc[tech, carrier, ...] = (
-                    capacity.lower.loc[tech, "power", node_set, year_set].data[
-                        ..., None
-                    ]
+                    capacity.lower.loc[tech, node_set, year_set].data[..., None]
                     * conversion_factor_lower
                 )
                 upper.loc[tech, carrier, ...] = (
-                    capacity.upper.loc[tech, "power", node_set, year_set].data[
-                        ..., None
-                    ]
+                    capacity.upper.loc[tech, node_set, year_set].data[..., None]
                     * conversion_factor_upper
                 )
         return lower, upper

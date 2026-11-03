@@ -10,9 +10,10 @@ class FiniteTransportRouteMask(GenericMask):
     """Transport routes with finite distance."""
 
     name = "finite_transport_route"
+    indices = ("set_technologies", "set_location")
 
     @classmethod
-    def build(cls, model_constructor, registry):
+    def get_mask(cls, model_constructor, registry):
         model = model_constructor.optimization_model
         technologies = list(model.sets["set_transport_technologies"])
         edges = list(model.sets["set_edges"])

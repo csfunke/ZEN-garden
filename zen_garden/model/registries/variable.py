@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
+from zen_garden.model.component_types.variable import VariableType
 from zen_garden.model.registries.base import Registry
 from zen_garden.model.registries.set import BaseSet
 
@@ -61,8 +62,7 @@ class VariableRegistry(Registry):
             BaseSet | tuple[list | pd.Series, list[str]] | list[list] | xr.DataArray
         ),
         unit_category,
-        integer: bool = False,
-        binary: bool = False,
+        variable_type: VariableType = "continuous",
         # TODO: Create Type alias for bounds
         bounds: (
             tuple[xr.DataArray, xr.DataArray]
@@ -81,15 +81,15 @@ class VariableRegistry(Registry):
         :param name: name of variable
         :param index_sets: Tuple of index values and index names
         :param unit_category: dict defining the dimensionality of the variable's unit
-        :param integer: If it is an integer variable
-        :param binary: If it is a binary variable
+        :param variable_type: Domain of the variable
         :param bounds:  bounds of variable
         :param doc: docstring of variable
         :param mask: mask of variable
         """
         if name in self.docs.keys():
-            logger.warning(f"Variable {name} already added. Can only be added once")
-            return
+            raise ValueError(f"Variable {name!r} already added. Can only be added once")
+        if variable_type not in ("continuous", "binary", "integer"):
+            raise ValueError(f"Unknown variable type {variable_type!r}")
 
         index_values, index_list = self.get_index_names_data(index_sets)
         mask_index, lower, upper = self.sets.indices_to_mask(
@@ -101,17 +101,17 @@ class VariableRegistry(Registry):
         self.lp_model.add_variables(
             lower=lower,
             upper=upper,
-            integer=integer,
-            binary=binary,
+            integer=variable_type == "integer",
+            binary=variable_type == "binary",
             name=name,
             mask=mask_index,
             coords=mask_index.coords,
         )
 
         # save variable doc
-        if integer:
+        if variable_type == "integer":
             domain = "Integers"
-        elif binary:
+        elif variable_type == "binary":
             domain = "Binary"
         elif isinstance(bounds, tuple) and isinstance(bounds[0], xr.DataArray):
             domain = "BoundedReals"
@@ -213,17 +213,6 @@ class VariableRegistry(Registry):
                 var_units.index.get_level_values(tech_level).map(unit_by_tech),
                 dtype=object,
             )
-            if "set_capacity_types" in var_units.index.names:
-                energy_idx = (
-                    var_units.index.get_level_values("set_capacity_types") == "energy"
-                )
-                # only parse each distinct unit once
-                energy_units = {
-                    u: str(self.unit_converter.ureg(u + "*hour").units)
-                    for u in var_units[energy_idx].unique()
-                }
-                var_units[energy_idx] = var_units[energy_idx].map(energy_units)
-
         return var_units[mask.to_series()]
 
     def __getitem__(self, key):

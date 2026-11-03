@@ -2,11 +2,16 @@ import functools
 import logging
 import os
 import time
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING, Callable, Literal, TypeVar
 
 import psutil
 
+from zen_garden.model.component_types.component import GenericComponent
+from zen_garden.model.component_types.constraint import GenericConstraint
 from zen_garden.model.component_types.expression import GenericExpression
+from zen_garden.model.component_types.parameter import GenericParameter
+from zen_garden.model.component_types.set import GenericSet
+from zen_garden.model.component_types.variable import GenericVariable
 from zen_garden.model.constructor import ModelConstructor
 from zen_garden.service_container import ServiceContainer
 
@@ -15,6 +20,11 @@ if TYPE_CHECKING:
     from zen_garden.model.schema import ModelSchema
 
 logger = logging.getLogger(__name__)
+
+ComponentSpec = TypeVar("ComponentSpec", bound=GenericComponent)
+ComponentCollection = Literal[
+    "sets", "parameters", "variables", "expressions", "constraints"
+]
 
 
 def measure_run_time(func: Callable) -> Callable:
@@ -82,13 +92,15 @@ class ModelConstructionService:
 
     @measure_run_time
     def _construct_sets(self):
-        for model_constructor in self._model_constructors:
-            model_constructor.construct_sets()
+        for model_set, owner in self._ordered_components("sets", GenericSet):
+            model_set.build(owner)
 
     @measure_run_time
     def _construct_params(self):
-        for model_constructor in self._model_constructors:
-            model_constructor.construct_params()
+        for parameter, owner in self._ordered_components(
+            "parameters", GenericParameter
+        ):
+            parameter.build(owner)
 
     @measure_run_time
     def _construct_masks(self):
@@ -105,33 +117,48 @@ class ModelConstructionService:
 
     @measure_run_time
     def _construct_vars(self):
-        for model_constructor in self._model_constructors:
-            model_constructor.construct_vars()
+        for variable, owner in self._ordered_components("variables", GenericVariable):
+            variable.build(owner)
 
     @measure_run_time
     def _construct_expressions(self):
-        expression_owners = {}
-        expressions = []
-        for model_constructor in self._model_constructors:
-            for expression in model_constructor.expressions:
-                existing = expression_owners.get(expression.name)
-                if existing is not None:
-                    raise ValueError(
-                        f"Multiple expression specifications define "
-                        f"{expression.name!r}: {existing[0].__name__} and "
-                        f"{expression.__name__}"
-                    )
-                expression_owners[expression.name] = (expression, model_constructor)
-                expressions.append(expression)
-
-        ordered = GenericExpression.construction_order(expressions)
-        for expression in ordered:
-            expression.build(expression_owners[expression.name][1])
+        for expression, owner in self._ordered_components(
+            "expressions", GenericExpression
+        ):
+            expression.build(owner)
 
     @measure_run_time
     def _construct_constraints(self):
+        for constraint, owner in self._ordered_components(
+            "constraints", GenericConstraint
+        ):
+            constraint.build(owner)
+
+    def _ordered_components(
+        self,
+        collection: ComponentCollection,
+        component_type: type[ComponentSpec],
+    ) -> list[tuple[type[ComponentSpec], ModelConstructor]]:
+        """Collect one component kind and return it in global dependency order."""
+        owners: dict[str, ModelConstructor] = {}
+        components: list[type[ComponentSpec]] = []
         for model_constructor in self._model_constructors:
-            model_constructor.construct_constraints()
+            for component in getattr(model_constructor, collection):
+                if not issubclass(component, component_type):
+                    raise TypeError(
+                        f"{component.__name__} in {collection!r} is not a "
+                        f"{component_type.__name__}"
+                    )
+                if component.name in owners:
+                    raise ValueError(
+                        f"Multiple {collection} specifications define "
+                        f"{component.name!r}"
+                    )
+                owners[component.name] = model_constructor
+                components.append(component)
+
+        ordered = component_type.construction_order(components)
+        return [(component, owners[component.name]) for component in ordered]
 
     def _construct_objective(self):
         """Select the optimization objective from a registered expression.

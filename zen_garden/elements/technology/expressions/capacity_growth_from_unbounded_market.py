@@ -7,12 +7,7 @@ class CapacityGrowthFromUnboundedMarket(GenericExpression):
     """Capacity growth supported by peers serving the same reference carrier."""
 
     name = "capacity_growth_from_unbounded_market"
-    indices = (
-        "set_technologies",
-        "set_capacity_types",
-        "set_location",
-        "set_years",
-    )
+    indices = ("set_technologies", "set_location", "set_years")
 
     @staticmethod
     def _class_technologies(model_constructor, technology):

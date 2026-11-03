@@ -10,14 +10,14 @@ class TechnologyInstallation(GenericVariable):
 
     name = "technology_installation"
     symbol = r"z^{\mathrm{install}}_{h,p,y}"
-    indices = ["set_technologies", "set_capacity_types", "set_location", "set_years"]
+    indices = ("set_technologies", "set_location", "set_years")
     doc = (
         "Binary variable which equals 1 if technology h is installed at "
         "location p and period y, else 0."
     )
     unit_category = {}
-    binary = True
-    masks = [CapacityAdditionEligibleMask, InstallationRelevantMask]
+    variable_type = "binary"
+    masks = (CapacityAdditionEligibleMask, InstallationRelevantMask)
 
     @classmethod
     def get_bounds(cls, model_constructor, index_sets):

@@ -10,12 +10,7 @@ class TechnologyCapacityLimitReachedConstraint(GenericConstraint):
     """Prevent additions where existing capacity already reaches the limit."""
 
     name = "constraint_technology_capacity_limit_reached"
-    indices = (
-        "set_technologies",
-        "set_capacity_types",
-        "set_location",
-        "set_years",
-    )
+    indices = ("set_technologies", "set_location", "set_years")
     masks = (CapacityAdditionEligibleMask,)
 
     @classmethod

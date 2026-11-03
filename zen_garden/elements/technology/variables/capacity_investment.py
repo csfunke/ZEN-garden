@@ -9,11 +9,8 @@ class CapacityInvestment(GenericVariable):
 
     name = "capacity_investment"
     symbol = r"\Delta K^{\mathrm{inv}}_{h,p,y}"
-    indices = ["set_technologies", "set_capacity_types", "set_location", "set_years"]
+    indices = ("set_technologies", "set_location", "set_years")
     doc = "Size of invested technology h at location p and period y."
     unit_category = {"energy_quantity": 1, "time": -1}
-    masks = [InvestmentEligibleMask]
-
-    @classmethod
-    def get_bounds(cls, model_constructor, index_sets):
-        return 0, np.inf
+    bounds = (0, np.inf)
+    masks = (InvestmentEligibleMask,)

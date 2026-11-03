@@ -16,7 +16,6 @@ class CapacityOnOffHelperVar(TechOnVar):
     ]
     doc = "Product of installed capacity and the technology on/off state."
     unit_category = {"energy_quantity": 1, "time": -1}
-    binary = False
 
     @classmethod
     def get_bounds(cls, model_constructor, index_sets):

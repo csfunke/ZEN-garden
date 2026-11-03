@@ -6,6 +6,7 @@ from typing import Any
 import pandas as pd
 import xarray as xr
 from linopy import Variable
+from linopy.constraints import Constraint
 from linopy.expressions import LinearExpression
 
 
@@ -26,8 +27,11 @@ def validate_component_indices(
         ValueError: If the constructed public dimensions differ from the
             declaration.
     """
-    actual = tuple(index for index in component.dims if index != "_term")
-    if len(actual) != len(expected) or set(actual) != set(expected):
+    dimensions = (
+        component.vars.dims if isinstance(component, Constraint) else component.dims
+    )
+    actual = tuple(index for index in dimensions if index != "_term")
+    if actual != expected:
         raise ValueError(
             f"{name!r} declares indices {expected!r}, but constructs {actual!r}"
         )
@@ -61,5 +65,35 @@ def transpose_linear_expression(
     expression: LinearExpression, dimensions: Sequence[str]
 ) -> LinearExpression:
     """Return a linear expression with a deterministic dimension order."""
-    data = expression.data.transpose(*dimensions, "_term")
-    return LinearExpression(data, expression.model)
+    data = xr.Dataset(
+        {
+            name: array.transpose(
+                *[dimension for dimension in dimensions if dimension in array.dims],
+                *[dimension for dimension in array.dims if dimension not in dimensions],
+            )
+            for name, array in expression.data.data_vars.items()
+        }
+    )
+    transposed = LinearExpression(data, expression.model)
+    # Linopy's constructor broadcasts the Dataset and restores its global
+    # dimension order. The individual arrays are already valid and aligned, so
+    # retain their requested public order after constructor validation.
+    transposed._data = data
+    return transposed
+
+
+def transpose_constraint(
+    constraint: Constraint, dimensions: Sequence[str]
+) -> Constraint:
+    """Return a constraint with a deterministic public dimension order."""
+    data = xr.Dataset(
+        {
+            name: array.transpose(
+                *[dimension for dimension in dimensions if dimension in array.dims],
+                *[dimension for dimension in array.dims if dimension not in dimensions],
+            )
+            for name, array in constraint.data.data_vars.items()
+        }
+    )
+    constraint._data = data
+    return constraint

@@ -51,5 +51,4 @@ class StoragePowerCapacityLimit(GenericExpression):
                 "set_storage_technologies"
             ],
             set_nodes=optimization_model.sets["set_nodes"],
-            set_capacity_types="power",
         )

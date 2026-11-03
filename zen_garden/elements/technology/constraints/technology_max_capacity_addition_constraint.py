@@ -8,12 +8,7 @@ class TechnologyMaxCapacityAdditionConstraint(GenericConstraint):
     """Technology Max Capacity Addition."""
 
     name = "constraint_technology_max_capacity_addition"
-    indices = (
-        "set_technologies",
-        "set_capacity_types",
-        "set_location",
-        "set_years",
-    )
+    indices = ("set_technologies", "set_location", "set_years")
     masks = (CapacityAdditionEligibleMask,)
 
     @classmethod

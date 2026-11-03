@@ -7,8 +7,9 @@ class ExistingCapacityMask(GenericMask):
     """Capacity committed outside the current optimization decisions."""
 
     name = "existing_capacity"
+    indices = ("set_technologies", "set_location", "set_years")
 
     @classmethod
-    def build(cls, model_constructor, registry):
+    def get_mask(cls, model_constructor, registry):
         existing = model_constructor.optimization_model.parameters.existing_capacities
         return existing.fillna(0) > 0

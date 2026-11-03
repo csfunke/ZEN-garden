@@ -18,7 +18,7 @@ class ChargeStorageBinary(GenericVariable):
         "charging mode (1) or discharging mode (0)."
     )
     unit_category = {}
-    binary = True
+    variable_type = "binary"
     masks = [PowerOperationMask]
 
     @classmethod

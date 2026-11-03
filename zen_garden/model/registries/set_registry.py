@@ -27,7 +27,6 @@ class SetRegistry(Registry):
         self,
         model_schema: "ModelSchema",
         element_registry: "ElementRegistry",
-        indexing_sets: list[str],
     ):
         """Initialization of the SetRegistry object."""
         # base class init
@@ -35,8 +34,6 @@ class SetRegistry(Registry):
 
         self.model_schema = model_schema
         self.element_registry = element_registry
-        self.indexing_sets = indexing_sets
-
         # attributes for the actual sets and index sets of the indexed sets
         self.sets: dict[str, BaseSet] = {}
         self.index_sets: dict[str, str] = {}
@@ -58,7 +55,7 @@ class SetRegistry(Registry):
         :param index_set: The name of the index set if the set it self is indexed
         """
         if name in self.sets:
-            logger.warning(f"{name} already added. Will be overwritten!")
+            raise ValueError(f"Set {name!r} already added. Can only be added once")
 
         # added data and docs
         if isinstance(data, Mapping):
@@ -285,9 +282,18 @@ class SetRegistry(Registry):
             )
             return base_custom_set, list_index
 
-        if list_index[0] not in self.indexing_sets:
-            raise NotImplementedError(
-                f"Index <{list_index[0]}> is not in the indexing sets."
+        leading_set = self.sets.get(list_index[0])
+        if leading_set is None:
+            raise ValueError(f"Unknown leading set {list_index[0]!r}")
+        unknown_elements = [
+            element
+            for element in leading_set
+            if self.element_registry.get_element_by_name(str(element)) is None
+        ]
+        if unknown_elements:
+            raise ValueError(
+                f"Set {list_index[0]!r} cannot lead structural indices because "
+                f"its members are not registered model elements: {unknown_elements!r}"
             )
 
         # Case 2: first index is indexed, build custom set based on first index
@@ -317,11 +323,6 @@ class SetRegistry(Registry):
                     append_element = self._append_on_off_modeled(element, index)
                     continue
 
-                # split in capacity types of power and energy
-                if index == "set_capacity_types":
-                    self._handle_set_capacity_types_index(element, list_sets)
-                    continue
-
                 raise NotImplementedError(f"Index <{index}> not known")
 
             # append indices to custom_set if element is supposed to be appended
@@ -347,12 +348,23 @@ class SetRegistry(Registry):
                 members: Iterable[Any]
                 if isinstance(model_set, IndexedSet):
                     parent_name = model_set.index_set
-                    if parent_name not in resolved:
+                    parent_value = resolved.get(parent_name)
+                    if parent_value is None:
+                        parent_members = self.sets[parent_name]
+                        candidate_values = [
+                            value
+                            for value in resolved.values()
+                            if value in parent_members
+                        ]
+                        if len(candidate_values) == 1:
+                            parent_value = candidate_values[0]
+                    if parent_value is None:
                         raise ValueError(
                             f"Indexed set {index_name!r} depends on {parent_name!r}, "
-                            "which must occur earlier in the component indices."
+                            "which must occur earlier in the component indices "
+                            "or be represented by one earlier subset index."
                         )
-                    members = model_set[resolved[parent_name]]
+                    members = model_set[parent_value]
                 else:
                     members = model_set
                 for member in members:
@@ -412,18 +424,6 @@ class SetRegistry(Registry):
             list_sets.append(self.sets["set_nodes"])
         elif element in self.sets["set_transport_technologies"]:
             list_sets.append(self.sets["set_edges"])
-
-    def _handle_set_capacity_types_index(self, element: str, list_sets: list[Any]):
-        """Handles the set_capacity_types index for the custom set.
-
-        :param element: element to handle
-        :param sets: sets of the optimization setup
-        :param list_sets: list of sets to append
-        """
-        if element in self.sets["set_storage_technologies"]:
-            list_sets.append(self.config.system.set_capacity_types)
-        else:
-            list_sets.append([self.config.system.set_capacity_types[0]])
 
     def _check_on_off_modeled(self, tech: str):
         """Checks if on-off-behavior of a technology needs to be modeled.

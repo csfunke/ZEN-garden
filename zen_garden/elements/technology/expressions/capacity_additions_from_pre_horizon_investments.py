@@ -10,12 +10,7 @@ class CapacityAdditionsFromPreHorizonInvestments(GenericExpression):
     """Map pre-horizon investments to their modeled commissioning years."""
 
     name = "capacity_additions_from_pre_horizon_investments"
-    indices = (
-        "set_technologies",
-        "set_capacity_types",
-        "set_location",
-        "set_years",
-    )
+    indices = ("set_technologies", "set_location", "set_years")
 
     @classmethod
     def get_expression(cls, model_constructor):

@@ -93,6 +93,8 @@ CAPEX symbols and parameters are defined in :ref:`notation.notation`.
 
 .. docstring_method:: zen_garden.elements.technology.constraints.CostCapexYearlyConstraint.get_constraint
 
+.. docstring_method:: zen_garden.elements.storage_technology.constraints.CostCapexYearlyEnergyConstraint.get_constraint
+
 Total annual technology CAPEX
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -375,6 +377,10 @@ Technology lifetime
 
 .. docstring_method:: zen_garden.elements.technology.constraints.TechnologyLifetimePreviousConstraint.get_constraint
 
+.. docstring_method:: zen_garden.elements.storage_technology.constraints.StorageEnergyLifetimeConstraint.get_constraint
+
+.. docstring_method:: zen_garden.elements.storage_technology.constraints.StorageEnergyLifetimePreviousConstraint.get_constraint
+
 Capacity upper limit
 ^^^^^^^^^^^^^^^^^^^^
 
@@ -382,10 +388,16 @@ Capacity upper limit
 
 .. docstring_method:: zen_garden.elements.technology.constraints.TechnologyCapacityLimitNotReachedConstraint.get_constraint
 
+.. docstring_method:: zen_garden.elements.storage_technology.constraints.StorageEnergyCapacityLimitReachedConstraint.get_constraint
+
+.. docstring_method:: zen_garden.elements.storage_technology.constraints.StorageEnergyCapacityLimitNotReachedConstraint.get_constraint
+
 Capacity lower limit
 ^^^^^^^^^^^^^^^^^^^^
 
 .. docstring_method:: zen_garden.elements.technology.constraints.TechnologyCapacityLowerLimitConstraint.get_constraint
+
+.. docstring_method:: zen_garden.elements.storage_technology.constraints.StorageEnergyCapacityLowerLimitConstraint.get_constraint
 
 .. _mathematical_formulation.minimum_capacity_addition:
 
@@ -394,10 +406,14 @@ Minimum capacity addition
 
 .. docstring_method:: zen_garden.elements.technology.constraints.TechnologyMinCapacityAdditionConstraint.get_constraint
 
+.. docstring_method:: zen_garden.elements.storage_technology.constraints.StorageEnergyMinCapacityAdditionConstraint.get_constraint
+
 Maximum capacity addition
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. docstring_method:: zen_garden.elements.technology.constraints.TechnologyMaxCapacityAdditionConstraint.get_constraint
+
+.. docstring_method:: zen_garden.elements.storage_technology.constraints.StorageEnergyMaxCapacityAdditionConstraint.get_constraint
 
 .. _mathematical_formulation.construction_time:
 
@@ -407,6 +423,10 @@ Construction time
 .. docstring_method:: zen_garden.elements.technology.constraints.TechnologyConstructionTimeConstraint.get_constraint
 
 .. docstring_method:: zen_garden.elements.technology.constraints.TechnologyConstructionTimeOutsideConstraint.get_constraint
+
+.. docstring_method:: zen_garden.elements.storage_technology.constraints.StorageEnergyConstructionTimeConstraint.get_constraint
+
+.. docstring_method:: zen_garden.elements.storage_technology.constraints.StorageEnergyConstructionTimeOutsideConstraint.get_constraint
 
 .. _mathematical_formulation.technology_diffusion:
 
@@ -449,6 +469,10 @@ energy capacity.
 
 .. docstring_method:: zen_garden.elements.technology.constraints.TechnologyDiffusionLimitLocationConstraint.get_constraint
 
+.. docstring_method:: zen_garden.elements.storage_technology.constraints.StorageEnergyDiffusionLimitTotalConstraint.get_constraint
+
+.. docstring_method:: zen_garden.elements.storage_technology.constraints.StorageEnergyDiffusionLimitLocationConstraint.get_constraint
+
 Linear conversion CAPEX
 ^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -465,6 +489,8 @@ Storage CAPEX
 ^^^^^^^^^^^^^
 
 .. docstring_method:: zen_garden.elements.storage_technology.constraints.StorageTechnologyCapexConstraint.get_constraint
+
+.. docstring_method:: zen_garden.elements.storage_technology.constraints.StorageTechnologyCapexEnergyConstraint.get_constraint
 
 Transport CAPEX
 ^^^^^^^^^^^^^^^

@@ -14,12 +14,7 @@ class CapacityGrowthFromSpillovers(GenericExpression):
     """Capacity growth supported by local and cross-location installation knowledge."""
 
     name = "capacity_growth_from_spillovers"
-    indices = (
-        "set_technologies",
-        "set_capacity_types",
-        "set_location",
-        "set_years",
-    )
+    indices = ("set_technologies", "set_location", "set_years")
 
     @classmethod
     def should_construct(cls, model_constructor):

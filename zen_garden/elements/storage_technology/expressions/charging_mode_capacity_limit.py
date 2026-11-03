@@ -1,5 +1,8 @@
 """Storage capacity available while the charging binary is active."""
 
+from zen_garden.elements.storage_technology.expressions.storage_power_capacity_limit import (  # noqa: E501
+    StoragePowerCapacityLimit,
+)
 from zen_garden.model.component_types.expression import GenericExpression
 
 
@@ -13,7 +16,7 @@ class ChargingModeCapacityLimit(GenericExpression):
         "set_years",
         "set_representative_hours",
     )
-    dependencies = ("storage_power_capacity_limit",)
+    dependencies = (StoragePowerCapacityLimit,)
 
     @classmethod
     def should_construct(cls, model_constructor):

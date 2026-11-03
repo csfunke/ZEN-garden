@@ -29,6 +29,6 @@ class FlowTransport(GenericVariable):
             )
         )
         capacity = model_constructor.optimization_model.variables["capacity"]
-        lower = capacity.lower.loc[tech_arr, "power", edge_arr, year_arr].data
-        upper = capacity.upper.loc[tech_arr, "power", edge_arr, year_arr].data
+        lower = capacity.lower.loc[tech_arr, edge_arr, year_arr].data
+        upper = capacity.upper.loc[tech_arr, edge_arr, year_arr].data
         return np.stack([lower, upper], axis=-1)

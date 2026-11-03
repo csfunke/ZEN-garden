@@ -1,3 +1,6 @@
+from zen_garden.elements.conversion_technology.parameters.conversion_factor import (
+    ConversionFactor,
+)
 from zen_garden.model.component_types.parameter import GenericParameter
 
 
@@ -18,4 +21,4 @@ class RetrofitFlowCouplingFactor(GenericParameter):
     )
     unit_category = {}
     time_series = True
-    dependencies = ["conversion_factor"]
+    dependencies = (ConversionFactor,)

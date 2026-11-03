@@ -393,8 +393,12 @@ class OptimizationStep:
         """
         capacity_indices = [
             "set_technologies",
-            "set_capacity_types",
             "set_location",
+            "set_years",
+        ]
+        energy_capacity_indices = [
+            "set_storage_technologies",
+            "set_nodes",
             "set_years",
         ]
         capacity_addition = self._solution_with_masked_zeros(
@@ -406,6 +410,15 @@ class OptimizationStep:
         cost_capex_overnight = self._solution_with_masked_zeros(
             "cost_capex_overnight", capacity_indices
         )
+        capacity_addition_energy = self._solution_with_masked_zeros(
+            "capacity_addition_energy", energy_capacity_indices
+        )
+        invest_capacity_energy = self._solution_with_masked_zeros(
+            "capacity_investment_energy", energy_capacity_indices
+        )
+        cost_capex_overnight_energy = self._solution_with_masked_zeros(
+            "cost_capex_overnight_energy", energy_capacity_indices
+        )
 
         if self.config.solver.round_parameters:
             rounding_value = 10 ** (
@@ -416,6 +429,9 @@ class OptimizationStep:
         capacity_addition[capacity_addition <= rounding_value] = 0
         invest_capacity[invest_capacity <= rounding_value] = 0
         cost_capex_overnight[cost_capex_overnight <= rounding_value] = 0
+        capacity_addition_energy[capacity_addition_energy <= rounding_value] = 0
+        invest_capacity_energy[invest_capacity_energy <= rounding_value] = 0
+        cost_capex_overnight_energy[cost_capex_overnight_energy <= rounding_value] = 0
 
         for tech in self.element_registry.all_elements_of_type(Technology):
             if not isinstance(tech, Technology):
@@ -427,10 +443,32 @@ class OptimizationStep:
             capacity_addition_tech = capacity_addition.loc[tech.name].unstack()
             capacity_investment = invest_capacity.loc[tech.name].unstack()
             cost_capex_tech = cost_capex_overnight.loc[tech.name].unstack()
+            if tech.name in self.optimization_model.sets["set_storage_technologies"]:
+                capacity_addition_tech_energy = capacity_addition_energy.loc[
+                    tech.name
+                ].unstack()
+                capacity_investment_energy_tech = invest_capacity_energy.loc[
+                    tech.name
+                ].unstack()
+                cost_capex_tech_energy = cost_capex_overnight_energy.loc[
+                    tech.name
+                ].unstack()
+            else:
+                capacity_addition_tech_energy = None
+                capacity_investment_energy_tech = None
+                cost_capex_tech_energy = None
             tech.add_new_capacity_addition_tech(
-                capacity_addition_tech, cost_capex_tech, decision_horizon
+                capacity_addition_tech,
+                cost_capex_tech,
+                decision_horizon,
+                capacity_addition_tech_energy,
+                cost_capex_tech_energy,
             )
-            tech.add_new_capacity_investment(capacity_investment, decision_horizon)
+            tech.add_new_capacity_investment(
+                capacity_investment,
+                decision_horizon,
+                capacity_investment_energy_tech,
+            )
 
     def _solution_with_masked_zeros(
         self, variable_name: str, indices: list[str]

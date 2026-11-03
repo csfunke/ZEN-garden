@@ -55,7 +55,7 @@ class CapacityFactorTransportConstraint(GenericConstraint):
                 techs, edges, :, :
             ]
             * model_constructor.optimization_model.variables["capacity"].loc[
-                techs, "power", edges, :
+                techs, edges, :
             ]
         ).rename(
             {

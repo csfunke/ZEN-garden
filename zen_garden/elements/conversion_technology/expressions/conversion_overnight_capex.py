@@ -41,7 +41,6 @@ class ConversionOvernightCapex(GenericExpression):
         nodes = model.sets["set_nodes"]
         addition = model.variables["capacity_addition"].sel(
             set_technologies=technologies,
-            set_capacity_types="power",
             set_location=nodes,
         )
         specific = model.parameters.capex_specific_conversion.rename(

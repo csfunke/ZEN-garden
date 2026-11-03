@@ -7,12 +7,7 @@ class ExistingCapacityIsBelowLimit(GenericExpression):
     """Indicate where existing capacity is below the configured upper limit."""
 
     name = "existing_capacity_is_below_limit"
-    indices = (
-        "set_technologies",
-        "set_capacity_types",
-        "set_location",
-        "set_years",
-    )
+    indices = ("set_technologies", "set_location", "set_years")
 
     @classmethod
     def get_expression(cls, model_constructor):

@@ -55,7 +55,7 @@ class CapacityFactorConversionConstraint(GenericConstraint):
                 techs, nodes, :, :
             ]
             * model_constructor.optimization_model.variables["capacity"].loc[
-                techs, "power", nodes, :
+                techs, nodes, :
             ]
         ).rename(
             {

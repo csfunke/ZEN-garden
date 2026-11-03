@@ -3,6 +3,12 @@
 import linopy as lp
 from linopy.expressions import LinearExpression
 
+from zen_garden.elements.conversion_technology.expressions.conversion_reference_flow import (  # noqa: E501
+    ConversionReferenceFlow,
+)
+from zen_garden.elements.storage_technology.expressions.storage_throughput import (
+    StorageThroughput,
+)
 from zen_garden.model.component_types.expression import GenericExpression
 
 
@@ -16,7 +22,7 @@ class TechnologyActivity(GenericExpression):
         "set_years",
         "set_representative_hours",
     )
-    dependencies = ("conversion_reference_flow", "storage_throughput")
+    dependencies = (ConversionReferenceFlow, StorageThroughput)
 
     @classmethod
     def should_construct(cls, model_constructor):

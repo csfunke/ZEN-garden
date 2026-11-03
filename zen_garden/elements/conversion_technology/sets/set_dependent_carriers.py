@@ -1,3 +1,6 @@
+from zen_garden.elements.technology.sets.set_conversion_technologies import (
+    SetConversionTechnologies,
+)
 from zen_garden.model.component_types.set import GenericSet
 
 
@@ -8,7 +11,7 @@ class SetDependentCarriers(GenericSet):
         "Set of carriers that are dependent on the reference carrier of a "
         "specific conversion technology."
     )
-    index_set = "set_conversion_technologies"
+    index_set = SetConversionTechnologies
 
     @classmethod
     def get_data(cls, model_constructor):

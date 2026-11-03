@@ -12,5 +12,6 @@ class DurationRepresentativeHoursStorage(GenericParameter):
     squeeze_singleton = False
 
     @classmethod
-    def store_input_data(cls, element):
+    def get_input_data(cls, element):
         """Retain durations populated by time-series aggregation."""
+        return None

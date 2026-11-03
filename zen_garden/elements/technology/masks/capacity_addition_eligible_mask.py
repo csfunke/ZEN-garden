@@ -10,9 +10,10 @@ class CapacityAdditionEligibleMask(GenericMask):
     """Locations and completion years where modeled additions may be nonzero."""
 
     name = "capacity_addition_eligible"
+    indices = ("set_technologies", "set_location", "set_years")
 
     @classmethod
-    def build(cls, model_constructor, registry):
+    def get_mask(cls, model_constructor, registry):
         model = model_constructor.optimization_model
         existing = model.parameters.existing_capacities.fillna(0)
         capacity_limit = model.parameters.capacity_limit
@@ -34,7 +35,7 @@ class CapacityAdditionEligibleMask(GenericMask):
                     "set_years_entire_horizon"
                 )
                 if existing_years is None or investment_year not in existing_years:
-                    eligible.loc[technology, :, :, completion_year] = False
+                    eligible.loc[technology, :, completion_year] = False
                     continue
                 committed = (
                     existing_investment.sel(
@@ -43,5 +44,5 @@ class CapacityAdditionEligibleMask(GenericMask):
                     ).fillna(0)
                     != 0
                 )
-                eligible.loc[technology, :, :, completion_year] &= committed
+                eligible.loc[technology, :, completion_year] &= committed
         return eligible.fillna(False)

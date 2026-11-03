@@ -11,6 +11,26 @@ def diffusion_rate(model_constructor):
     return rate.broadcast_like(model.variables["capacity_addition"].lower)
 
 
+def storage_energy_diffusion_rate(model_constructor):
+    """Return storage energy-capacity growth over one investment interval."""
+    model = model_constructor.optimization_model
+    interval = model.parameters.interval_between_years
+    technologies = model.sets["set_storage_technologies"]
+    rate = (1 + model.parameters.max_diffusion_rate) ** interval - 1
+    rate = rate.sel(set_technologies=technologies)
+    rate = rate.rename(
+        {
+            dimension: replacement
+            for dimension, replacement in {
+                "set_technologies": "set_storage_technologies",
+                "set_location": "set_nodes",
+            }.items()
+            if dimension in rate.dims
+        }
+    )
+    return rate.broadcast_like(model.variables["capacity_addition_energy"].lower)
+
+
 def technology_type_mask(model_constructor):
     """Return one for conversion/storage technologies and zero for transport."""
     model = model_constructor.optimization_model

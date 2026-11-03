@@ -6,12 +6,7 @@ class TechnologyCapacityLowerLimitConstraint(GenericConstraint):
     """Technology Capacity Lower Limit."""
 
     name = "constraint_technology_capacity_lower_limit"
-    indices = (
-        "set_technologies",
-        "set_capacity_types",
-        "set_location",
-        "set_years",
-    )
+    indices = ("set_technologies", "set_location", "set_years")
     masks = (CapacityAvailableMask,)
 
     @classmethod

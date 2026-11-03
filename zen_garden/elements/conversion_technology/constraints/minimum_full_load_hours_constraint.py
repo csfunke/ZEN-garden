@@ -13,7 +13,6 @@ class MinimumFullLoadHoursConstraint(GenericConstraint):
         "set_conversion_technologies",
         "set_nodes",
         "set_years",
-        "set_capacity_types",
     )
     masks = (PowerCapacityYearMask,)
 
@@ -88,7 +87,6 @@ class MinimumFullLoadHoursConstraint(GenericConstraint):
             .sel(
                 {
                     "set_technologies": techs,
-                    "set_capacity_types": ["power"],
                     "set_location": nodes,
                 }
             )

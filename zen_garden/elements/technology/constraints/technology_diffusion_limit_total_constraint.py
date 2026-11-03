@@ -12,7 +12,7 @@ class TechnologyDiffusionLimitTotalConstraint(GenericConstraint):
     """Limit aggregate additions without counting cross-location spillovers twice."""
 
     name = "constraint_technology_diffusion_limit_total"
-    indices = ("set_technologies", "set_capacity_types", "set_years")
+    indices = ("set_technologies", "set_years")
 
     @classmethod
     def should_construct(cls, model_constructor):

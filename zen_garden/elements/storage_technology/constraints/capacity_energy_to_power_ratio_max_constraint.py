@@ -8,7 +8,7 @@ class CapacityEnergyToPowerRatioMaxConstraint(GenericConstraint):
     """Enforce the maximum energy-to-power ratio of storage additions."""
 
     name = "constraint_capacity_energy_to_power_ratio_max"
-    indices = ("set_storage_technologies", "set_location", "set_years")
+    indices = ("set_storage_technologies", "set_nodes", "set_years")
     masks = (CapacityAdditionAnyTypeMask,)
 
     @classmethod

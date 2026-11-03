@@ -3,15 +3,10 @@ from zen_garden.model.component_types.constraint import GenericConstraint
 
 
 class StorageTechnologyCapexConstraint(GenericConstraint):
-    """Set storage overnight CAPEX from power- and energy-capacity additions."""
+    """Set storage overnight CAPEX from power-capacity additions."""
 
     name = "constraint_storage_technology_capex"
-    indices = (
-        "set_technologies",
-        "set_capacity_types",
-        "set_location",
-        "set_years",
-    )
+    indices = ("set_technologies", "set_location", "set_years")
     masks = (CapacityAdditionEligibleMask,)
 
     @classmethod

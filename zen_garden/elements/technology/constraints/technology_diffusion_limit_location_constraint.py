@@ -12,12 +12,7 @@ class TechnologyDiffusionLimitLocationConstraint(GenericConstraint):
     """Limit additions at each location using available installation knowledge."""
 
     name = "constraint_technology_diffusion_limit"
-    indices = (
-        "set_technologies",
-        "set_capacity_types",
-        "set_location",
-        "set_years",
-    )
+    indices = ("set_technologies", "set_location", "set_years")
 
     @classmethod
     def should_construct(cls, model_constructor):

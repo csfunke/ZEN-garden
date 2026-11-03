@@ -122,7 +122,14 @@ class ModelComponentTable(SphinxDirective):
             row += _entry([nodes.math(text=component.symbol)])
             if kind == "sets":
                 index_set = getattr(component, "index_set", None)
-                row += _entry([nodes.literal(text=index_set)] if index_set else ["—"])
+                index_set_name = (
+                    index_set
+                    if isinstance(index_set, str)
+                    else getattr(index_set, "name", None)
+                )
+                row += _entry(
+                    [nodes.literal(text=index_set_name)] if index_set_name else ["—"]
+                )
             else:
                 indices = getattr(component, "indices", ())
                 row += _entry(

@@ -73,11 +73,7 @@ class MaskRegistry:
                 raise ValueError(f"Cyclic mask dependencies: {cycle}")
             for mask_type in ready:
                 mask = mask_type.build(owners[mask_type], self)
-                if not isinstance(mask, xr.DataArray) or mask.dtype != bool:
-                    raise TypeError(
-                        f"Mask {mask_type.name!r} must build a boolean DataArray"
-                    )
-                self._masks[mask_type.name] = mask.fillna(False)
+                self._masks[mask_type.name] = mask
                 completed.add(mask_type)
                 remaining.remove(mask_type)
 

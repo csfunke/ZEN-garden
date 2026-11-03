@@ -11,12 +11,7 @@ class CapacityAdditionsFromNewInvestments(GenericExpression):
     """Map modeled investment decisions to their commissioning years."""
 
     name = "capacity_additions_from_new_investments"
-    indices = (
-        "set_technologies",
-        "set_capacity_types",
-        "set_location",
-        "set_years",
-    )
+    indices = ("set_technologies", "set_location", "set_years")
 
     @classmethod
     def get_expression(cls, model_constructor):

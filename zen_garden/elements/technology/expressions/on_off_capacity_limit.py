@@ -44,11 +44,7 @@ class OnOffCapacityLimit(GenericExpression):
             Expression over its declared model indices.
         """
         optimization_model = model_constructor.optimization_model
-        capacity_limit = (
-            optimization_model.variables["capacity"]
-            .sel(set_capacity_types="power")
-            .upper
-        )
+        capacity_limit = optimization_model.variables["capacity"].upper
         binary_mask = optimization_model.variables["tech_on_var"].mask
         infinite = (capacity_limit.where(binary_mask) == np.inf).to_series()
         invalid = infinite[infinite].index.droplevel(2).unique().to_list()

@@ -12,12 +12,7 @@ class TechnologyConstructionTimeConstraint(GenericConstraint):
     """Link capacity additions to investments using construction lead time."""
 
     name = "constraint_technology_construction_time"
-    indices = (
-        "set_technologies",
-        "set_capacity_types",
-        "set_location",
-        "set_years",
-    )
+    indices = ("set_technologies", "set_location", "set_years")
     masks = (CapacityAdditionEligibleMask,)
 
     @classmethod

@@ -11,12 +11,7 @@ class CapacityGrowthFromLocalLearning(GenericExpression):
     """Capacity growth supported by depreciated additions at the same location."""
 
     name = "capacity_growth_from_local_learning"
-    indices = (
-        "set_technologies",
-        "set_capacity_types",
-        "set_location",
-        "set_years",
-    )
+    indices = ("set_technologies", "set_location", "set_years")
 
     @classmethod
     def get_expression(cls, model_constructor):

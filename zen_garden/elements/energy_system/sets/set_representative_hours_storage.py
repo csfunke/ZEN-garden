@@ -1,3 +1,4 @@
+from zen_garden.elements.energy_system.sets.set_years import SetYears
 from zen_garden.model.component_types.set import GenericSet
 
 
@@ -7,7 +8,7 @@ class SetRepresentativeHoursStorage(GenericSet):
     name = "set_representative_hours_storage"
     symbol = r"\tilde{r} \in \widetilde{\mathcal{R}}_{y}"
     doc = "Set of representative storage hours used to track storage levels."
-    index_set = "set_years"
+    index_set = SetYears
 
     @classmethod
     def get_data(cls, model_constructor):

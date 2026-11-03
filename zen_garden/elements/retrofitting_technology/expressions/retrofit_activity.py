@@ -2,6 +2,9 @@
 
 import pandas as pd
 
+from zen_garden.elements.conversion_technology.expressions.conversion_reference_flow import (  # noqa: E501
+    ConversionReferenceFlow,
+)
 from zen_garden.model.component_types.expression import GenericExpression
 from zen_garden.model.linear_expression import map_and_expand
 
@@ -16,7 +19,7 @@ class RetrofitActivity(GenericExpression):
         "set_years",
         "set_representative_hours",
     )
-    dependencies = ("conversion_reference_flow",)
+    dependencies = (ConversionReferenceFlow,)
 
     @classmethod
     def get_expression(cls, model_constructor):

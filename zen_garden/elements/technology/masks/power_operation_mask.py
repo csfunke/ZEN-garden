@@ -10,12 +10,17 @@ class PowerOperationMask(GenericMask):
     """Technology power capacity available in each operational time step."""
 
     name = "power_operation"
-    dependencies = [CapacityAvailableMask]
+    indices = (
+        "set_technologies",
+        "set_location",
+        "set_years",
+        "set_representative_hours",
+    )
+    dependencies = (CapacityAvailableMask,)
 
     @classmethod
-    def build(cls, model_constructor, registry):
-        capacity = registry[CapacityAvailableMask].sel(set_capacity_types="power")
-        capacity = capacity.drop_vars("set_capacity_types", errors="ignore")
+    def get_mask(cls, model_constructor, registry):
+        capacity = registry[CapacityAvailableMask]
         representative_hours = list(
             model_constructor.optimization_model.sets["set_representative_hours"]
         )

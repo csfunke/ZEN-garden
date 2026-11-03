@@ -35,7 +35,19 @@ class AnnualFixedOpex(GenericExpression):
             Expression over its declared model indices.
         """
         optimization_model = model_constructor.optimization_model
-        return (
+        power_cost = (
             optimization_model.parameters.opex_specific_fixed
             * optimization_model.variables["capacity"]
-        ).sum("set_capacity_types")
+        )
+        if not optimization_model.sets["set_storage_technologies"]:
+            return power_cost
+        storage_energy_cost = (
+            optimization_model.parameters.opex_specific_fixed_energy
+            * optimization_model.variables["capacity_energy"]
+        ).rename(
+            {
+                "set_storage_technologies": "set_technologies",
+                "set_nodes": "set_location",
+            }
+        )
+        return power_cost + storage_energy_cost

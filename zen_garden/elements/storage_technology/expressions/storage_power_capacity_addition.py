@@ -7,7 +7,7 @@ class StoragePowerCapacityAddition(GenericExpression):
     """Select storage power-capacity additions."""
 
     name = "storage_power_capacity_addition"
-    indices = ("set_storage_technologies", "set_location", "set_years")
+    indices = ("set_storage_technologies", "set_nodes", "set_years")
 
     @classmethod
     def should_construct(cls, model_constructor):
@@ -45,7 +45,12 @@ class StoragePowerCapacityAddition(GenericExpression):
             optimization_model.variables["capacity_addition"]
             .sel(
                 set_technologies=optimization_model.sets["set_storage_technologies"],
-                set_capacity_types="power",
+                set_location=optimization_model.sets["set_nodes"],
             )
-            .rename({"set_technologies": "set_storage_technologies"})
+            .rename(
+                {
+                    "set_technologies": "set_storage_technologies",
+                    "set_location": "set_nodes",
+                }
+            )
         )

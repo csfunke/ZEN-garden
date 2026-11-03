@@ -10,9 +10,10 @@ class InstallationRelevantMask(GenericMask):
     """Positions where the installation binary has a nonzero model role."""
 
     name = "installation_relevant"
+    indices = ("set_technologies", "set_location", "set_years")
 
     @classmethod
-    def build(cls, model_constructor, registry):
+    def get_mask(cls, model_constructor, registry):
         model = model_constructor.optimization_model
         mask = xr.zeros_like(model.parameters.capacity_limit, dtype=bool)
         minimum = model.parameters.capacity_addition_min
@@ -33,5 +34,5 @@ class InstallationRelevantMask(GenericMask):
                     "set_edges": "set_location",
                 }
             )
-            mask.loc[technologies, :, edges, :] |= distance_cost
+            mask.loc[technologies, edges, :] |= distance_cost
         return mask

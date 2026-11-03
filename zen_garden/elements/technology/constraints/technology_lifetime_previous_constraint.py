@@ -12,12 +12,7 @@ class TechnologyLifetimePreviousConstraint(GenericConstraint):
     """Define capacity before additions made in the current year."""
 
     name = "constraint_technology_lifetime_previous"
-    indices = (
-        "set_technologies",
-        "set_capacity_types",
-        "set_location",
-        "set_years",
-    )
+    indices = ("set_technologies", "set_location", "set_years")
     masks = (CapacityAvailableMask,)
 
     @classmethod

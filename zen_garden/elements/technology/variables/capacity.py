@@ -9,10 +9,10 @@ class Capacity(GenericVariable):
 
     name = "capacity"
     symbol = r"K_{h,p,y}"
-    indices = ["set_technologies", "set_capacity_types", "set_location", "set_years"]
+    indices = ("set_technologies", "set_location", "set_years")
     doc = "Size of installed technology h at location p and period y."
     unit_category = {"energy_quantity": 1, "time": -1}
-    masks = [CapacityAvailableMask]
+    masks = (CapacityAvailableMask,)
 
     @classmethod
     def get_bounds(cls, model_constructor, index_sets):
@@ -20,7 +20,7 @@ class Capacity(GenericVariable):
             ["set_technologies", "set_on_off"]
         )[0]
 
-        def capacity_bounds(tech, capacity_type, loc, time):
+        def capacity_bounds(tech, loc, time):
             if tech not in techs_on_off:
                 return 0, np.inf
 
@@ -35,14 +35,11 @@ class Capacity(GenericVariable):
                     is_available = time <= lifetime_existing + 1
                 if is_available:
                     capacities_existing += params.capacity_existing[
-                        tech, capacity_type, loc, existing_id
+                        tech, loc, existing_id
                     ]
 
-            addition_max = (
-                len(sets["set_years"])
-                * params.capacity_addition_max[tech, capacity_type]
-            )
-            capacity_limit = params.capacity_limit[tech, capacity_type, loc, time]
+            addition_max = len(sets["set_years"]) * params.capacity_addition_max[tech]
+            capacity_limit = params.capacity_limit[tech, loc, time]
             return 0, min(
                 addition_max + capacities_existing,
                 capacity_limit + capacities_existing,

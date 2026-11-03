@@ -10,12 +10,7 @@ class CostCapexYearlyConstraint(GenericConstraint):
     """Cost Capex Yearly."""
 
     name = "constraint_cost_capex_yearly"
-    indices = (
-        "set_technologies",
-        "set_capacity_types",
-        "set_location",
-        "set_years",
-    )
+    indices = ("set_technologies", "set_location", "set_years")
     masks = (CapexActiveMask,)
 
     @classmethod

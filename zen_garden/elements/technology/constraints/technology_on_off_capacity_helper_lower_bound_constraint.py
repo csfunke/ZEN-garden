@@ -48,6 +48,6 @@ class TechnologyOnOffCapacityHelperLowerBoundConstraint(GenericConstraint):
         model = model_constructor.optimization_model
         helper = model.variables["capacity_on_off_helper_var"]
         limit = model.expressions["on_off_capacity_limit"]
-        capacity = model.variables["capacity"].sel(set_capacity_types="power")
+        capacity = model.variables["capacity"]
         binary = model.variables["tech_on_var"]
         return align_and_mask(capacity + limit * binary - helper, helper.mask) <= limit

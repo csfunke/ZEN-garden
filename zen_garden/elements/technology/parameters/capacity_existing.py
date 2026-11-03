@@ -8,10 +8,8 @@ class CapacityExisting(GenericParameter):
     symbol = r"k^{\mathrm{ex}}_{h,p,v}"
     indices = (
         "set_technologies",
-        "set_capacity_types",
         "set_location",
         "set_technologies_existing",
     )
     doc = "Parameter which specifies the existing technology size."
     unit_category = {"energy_quantity": 1, "time": -1}
-    capacity_types = True

@@ -9,9 +9,15 @@ class StorageInflowMask(GenericMask):
     """Operational positions with nonzero exogenous storage inflow."""
 
     name = "storage_inflow"
+    indices = (
+        "set_technologies",
+        "set_location",
+        "set_years",
+        "set_representative_hours",
+    )
 
     @classmethod
-    def build(cls, model_constructor, registry):
+    def get_mask(cls, model_constructor, registry):
         model = model_constructor.optimization_model
         technologies = list(model.sets["set_storage_technologies"])
         if not technologies:

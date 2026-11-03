@@ -13,7 +13,6 @@ class InvestmentsBeyondHorizon(GenericExpression):
     name = "investments_beyond_horizon"
     indices = (
         "set_technologies",
-        "set_capacity_types",
         "set_location",
         "set_time_steps_construction",
     )

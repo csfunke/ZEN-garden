@@ -3,6 +3,24 @@
 import linopy as lp
 from linopy.expressions import LinearExpression
 
+from zen_garden.elements.carrier.expressions.nodal_conversion_consumption import (
+    NodalConversionConsumption,
+)
+from zen_garden.elements.carrier.expressions.nodal_conversion_production import (
+    NodalConversionProduction,
+)
+from zen_garden.elements.carrier.expressions.nodal_storage_charging import (
+    NodalStorageCharging,
+)
+from zen_garden.elements.carrier.expressions.nodal_storage_discharging import (
+    NodalStorageDischarging,
+)
+from zen_garden.elements.carrier.expressions.nodal_transport_inflow import (
+    NodalTransportInflow,
+)
+from zen_garden.elements.carrier.expressions.nodal_transport_outflow import (
+    NodalTransportOutflow,
+)
 from zen_garden.model.component_types.expression import GenericExpression
 
 
@@ -17,12 +35,12 @@ class NodalNetSupply(GenericExpression):
         "set_representative_hours",
     )
     dependencies = (
-        "nodal_conversion_consumption",
-        "nodal_conversion_production",
-        "nodal_transport_inflow",
-        "nodal_transport_outflow",
-        "nodal_storage_charging",
-        "nodal_storage_discharging",
+        NodalConversionConsumption,
+        NodalConversionProduction,
+        NodalTransportInflow,
+        NodalTransportOutflow,
+        NodalStorageCharging,
+        NodalStorageDischarging,
     )
 
     @classmethod

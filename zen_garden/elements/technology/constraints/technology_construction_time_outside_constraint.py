@@ -9,7 +9,6 @@ class TechnologyConstructionTimeOutsideConstraint(GenericConstraint):
     name = "constraint_technology_construction_time_outside"
     indices = (
         "set_technologies",
-        "set_capacity_types",
         "set_location",
         "set_time_steps_construction",
     )

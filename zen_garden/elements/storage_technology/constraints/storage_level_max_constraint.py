@@ -46,19 +46,9 @@ class StorageLevelMaxConstraint(GenericConstraint):
         """
         techs = model_constructor.optimization_model.sets["set_storage_technologies"]
         nodes = model_constructor.optimization_model.sets["set_nodes"]
-        capacity = model_constructor.optimization_model.variables["capacity"].rename(
-            {
-                "set_technologies": "set_storage_technologies",
-                "set_location": "set_nodes",
-            }
-        )
-        capacity = capacity.sel(
-            {
-                "set_nodes": nodes,
-                "set_storage_technologies": techs,
-                "set_capacity_types": "energy",
-            }
-        )
+        capacity = model_constructor.optimization_model.variables[
+            "capacity_energy"
+        ].sel(set_nodes=nodes, set_storage_technologies=techs)
         storage_level = model_constructor.optimization_model.variables["storage_level"]
         lhs = storage_level - capacity
         rhs = 0

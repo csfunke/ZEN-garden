@@ -31,8 +31,9 @@ class ConstraintRegistry(Registry):
         :param doc: docstring of variable
         """
         if name in self.docs.keys():
-            logger.warning(f"{name} already added. Can only be added once")
-            return
+            raise ValueError(
+                f"Constraint {name!r} already added. Can only be added once"
+            )
 
         if constraint is None or constraint == []:
             return

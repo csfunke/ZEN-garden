@@ -47,7 +47,6 @@ class TransportTechnologyCapexConstraint(GenericConstraint):
         edges = model.sets["set_edges"]
         cost = model.variables["cost_capex_overnight"].sel(
             set_technologies=technologies,
-            set_capacity_types="power",
             set_location=edges,
         )
         available = ~np.isinf(

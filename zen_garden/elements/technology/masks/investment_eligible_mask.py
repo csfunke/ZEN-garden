@@ -13,10 +13,11 @@ class InvestmentEligibleMask(GenericMask):
     """Investment years that map to an eligible completion inside the horizon."""
 
     name = "investment_eligible"
-    dependencies = [CapacityAdditionEligibleMask]
+    indices = ("set_technologies", "set_location", "set_years")
+    dependencies = (CapacityAdditionEligibleMask,)
 
     @classmethod
-    def build(cls, model_constructor, registry):
+    def get_mask(cls, model_constructor, registry):
         additions = registry[CapacityAdditionEligibleMask]
         investments = xr.zeros_like(additions, dtype=bool)
         years = list(model_constructor.optimization_model.sets["set_years"])
@@ -28,7 +29,7 @@ class InvestmentEligibleMask(GenericMask):
             for completion_year in years:
                 investment_year = completion_year - delay
                 if investment_year in years:
-                    investments.loc[technology, :, :, investment_year] |= additions.loc[
-                        technology, :, :, completion_year
+                    investments.loc[technology, :, investment_year] |= additions.loc[
+                        technology, :, completion_year
                     ]
         return investments
